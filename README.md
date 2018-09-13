@@ -28,3 +28,5 @@ Run docker container with che-machine-exec manually:
 ```
 docker run --rm -p 4444:4444 -v /var/run/docker.sock:/var/run/docker.sock eclipse/che-machine-exec
 ````
+
+# Todo apply docs for using it on the Openshift and Kubernetes.

@@ -1,0 +1,58 @@
+{
+  "environments": {
+    "default": {
+      "machines": {
+        "ws/theia": {
+          "attributes": {},
+          "servers": {
+            "theia": {
+              "protocol": "http",
+              "port": "3000",
+              "path": "/",
+              "attributes": {
+                "type": "ide"
+              }
+            },
+            "theia-dev": {
+              "protocol": "http",
+              "port": "3030",
+              "attributes": {
+                "type": "ide-dev"
+              }
+            }
+          },
+          "volumes": {
+            "projects": {
+              "path": "/projects"
+            }
+          },
+          "installers": [],
+          "env": {
+            "HOSTED_PLUGIN_HOSTNAME": "0.0.0.0"
+          }
+        },
+        "ws/machine-exec": {
+          "servers": {
+            "machine-exec": {
+              "attributes": {
+                "type": "terminal"
+              },
+              "port": "4444",
+              "protocol": "ws"
+            }
+          },
+          "attributes": {}
+        }
+      },
+      "recipe": {
+        "type": "openshift",
+        "content": "---\nkind: List\nitems:\n-\n  apiVersion: v1\n  kind: Pod\n  metadata:\n    name: ws\n  spec:\n    containers:\n      -\n        image: aandrienko/che-theia-0:latest\n        name: theia\n      -\n        image: aandrienko/che-machine-exec:0.0.1\n        name: machine-exec\n",
+        "contentType": "application/x-yaml"
+      }
+    }
+  },
+  "defaultEnv": "default",
+  "name": "theia",
+  "projects": [],
+  "commands": []
+}

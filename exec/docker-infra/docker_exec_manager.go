@@ -10,22 +10,26 @@
 //   Red Hat, Inc. - initial API and implementation
 //
 
-package exec
+package docker_infra
 
 import (
 	"errors"
 	"fmt"
-	"strconv"
-	"sync"
-	"sync/atomic"
-
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/eclipse/che-machine-exec/api/model"
+	wsConnHandler "github.com/eclipse/che-machine-exec/exec/ws-conn"
 	"github.com/eclipse/che-machine-exec/line-buffer"
 	"github.com/gorilla/websocket"
 	"golang.org/x/net/context"
+	"strconv"
+	"sync"
+	"sync/atomic"
 )
+
+type DockerMachineExecManager struct {
+	client *client.Client
+}
 
 type MachineExecs struct {
 	mutex   *sync.Mutex
@@ -33,7 +37,6 @@ type MachineExecs struct {
 }
 
 var (
-	cli          = createDockerClient()
 	machineExecs = MachineExecs{
 		mutex:   &sync.Mutex{},
 		execMap: make(map[int]*model.MachineExec),
@@ -41,25 +44,29 @@ var (
 	prevExecID uint64 = 0
 )
 
-func createDockerClient() *client.Client {
-	cli, err := client.NewEnvClient()
+func New() DockerMachineExecManager {
+	return DockerMachineExecManager{client: createClient()}
+}
+
+func createClient() *client.Client {
+	dockerClient, err := client.NewEnvClient()
 	// set up minimal docker version 1.13.0(api version 1.25).
-	cli.UpdateClientVersion("1.25")
+	dockerClient.UpdateClientVersion("1.25")
 	if err != nil {
 		panic(err)
 	}
-	return cli
+	return dockerClient
 }
 
-func Create(machineExec *model.MachineExec) (int, error) {
-	container, err := findMachineContainer(&machineExec.Identifier)
+func (manager DockerMachineExecManager) Create(machineExec *model.MachineExec) (int, error) {
+	container, err := findMachineContainer(manager, &machineExec.Identifier)
 	if err != nil {
 		return -1, err
 	}
 
 	fmt.Println("found container for creation exec! id=", container.ID)
 
-	resp, err := cli.ContainerExecCreate(context.Background(), container.ID, types.ExecConfig{
+	resp, err := manager.client.ContainerExecCreate(context.Background(), container.ID, types.ExecConfig{
 		Tty:          machineExec.Tty,
 		AttachStdin:  true,
 		AttachStdout: true,
@@ -76,7 +83,6 @@ func Create(machineExec *model.MachineExec) (int, error) {
 
 	machineExec.ExecId = resp.ID
 	machineExec.ID = int(atomic.AddUint64(&prevExecID, 1))
-	machineExec.Buffer = line_buffer.CreateNewLineRingBuffer()
 	machineExec.MsgChan = make(chan []byte)
 	machineExec.WsConnsLock = &sync.Mutex{}
 	machineExec.WsConns = make([]*websocket.Conn, 0)
@@ -88,7 +94,7 @@ func Create(machineExec *model.MachineExec) (int, error) {
 	return machineExec.ID, nil
 }
 
-func Check(id int) (int, error) {
+func (manager DockerMachineExecManager) Check(id int) (int, error) {
 	machineExec := getById(id)
 	if machineExec == nil {
 		return -1, errors.New("Exec '" + strconv.Itoa(id) + "' was not found")
@@ -96,36 +102,46 @@ func Check(id int) (int, error) {
 	return machineExec.ID, nil
 }
 
-func Attach(id int) (*model.MachineExec, error) {
+func (manager DockerMachineExecManager) Attach(id int, conn *websocket.Conn) error {
 	machineExec := getById(id)
 	if machineExec == nil {
-		return nil, errors.New("Exec '" + strconv.Itoa(id) + "' to attach was not found")
+		return errors.New("Exec '" + strconv.Itoa(id) + "' to attach was not found")
 	}
 
-	if machineExec.Hjr != nil {
-		return machineExec, nil
+	machineExec.AddWebSocket(conn)
+	go wsConnHandler.ReadWebSocketData(machineExec, conn)
+	go wsConnHandler.SendPingMessage(conn)
+
+	if machineExec.Buffer != nil {
+		// restore previous output.
+		restoreContent := machineExec.Buffer.GetContent()
+		return conn.WriteMessage(websocket.TextMessage, []byte(restoreContent))
 	}
 
-	hjr, err := cli.ContainerExecAttach(context.Background(), machineExec.ExecId, types.ExecConfig{
+	hjr, err := manager.client.ContainerExecAttach(context.Background(), machineExec.ExecId, types.ExecConfig{
 		Detach: false,
 		Tty:    machineExec.Tty,
 	})
 	if err != nil {
-		return nil, errors.New("Failed to attach to exec " + err.Error())
+		return errors.New("Failed to attach to exec " + err.Error())
 	}
-	machineExec.Hjr = &hjr
 
-	return machineExec, nil
+	machineExec.Hjr = &hjr
+	machineExec.Buffer = line_buffer.New()
+
+	machineExec.Start()
+
+	return nil
 }
 
-func Resize(id int, cols uint, rows uint) error {
+func (manager DockerMachineExecManager) Resize(id int, cols uint, rows uint) error {
 	machineExec := getById(id)
 	if machineExec == nil {
 		return errors.New("Exec to resize '" + strconv.Itoa(id) + "' was not found")
 	}
 
 	resizeParam := types.ResizeOptions{Height: rows, Width: cols}
-	if err := cli.ContainerExecResize(context.Background(), machineExec.ExecId, resizeParam); err != nil {
+	if err := manager.client.ContainerExecResize(context.Background(), machineExec.ExecId, resizeParam); err != nil {
 		return err
 	}
 
