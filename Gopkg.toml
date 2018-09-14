@@ -95,9 +95,19 @@
   name = "github.com/Azure/go-autorest"
   revision = "d4e6b95c12a08b4de2d48b45d5b4d594e5d32fab"
 
+# Test dependencies #
 [[override]]
   name = "github.com/davecgh/go-spew"
-  revision = "782f4967f2dc4564575ca782fe2d04090b5faca8"
+  version = "=v1.1.0"
+
+[[override]]
+  name = "github.com/pmezard/go-difflib"
+  version = "=v1.0.0"
+
+[[override]]
+  name = "github.com/stretchr/testify"
+  version = "=v1.2.1"
+# Test dependencies #
 
 [[override]]
   name = "github.com/dgrijalva/jwt-go"
