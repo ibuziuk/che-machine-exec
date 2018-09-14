@@ -49,7 +49,7 @@
       },
       "recipe": {
         "type": "compose",
-        "content": "services:\n theia:\n  image: 'aandrienko/che-theia-0:latest'\n  mem_limit: 2147483648\n machine-exec:\n  image: 'aandrienko/che-machine-exec:0.0.1'\n  mem_limit: 2147483648\n",
+        "content": "services:\n theia:\n  image: 'aandrienko/che-theia-0:latest'\n  mem_limit: 2147483648\n machine-exec:\n  image: 'aandrienko/che-machine-exec:latest'\n  mem_limit: 2147483648\n",
         "contentType": "application/x-yaml"
       }
     }
