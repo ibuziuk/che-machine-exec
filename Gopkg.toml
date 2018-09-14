@@ -168,10 +168,6 @@
   revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
 
 [[override]]
-  name = "github.com/stretchr/testify"
-  revision = "f6abca593680b2315d2075e0f5e2a9751e3f431a"
-
-[[override]]
   name = "golang.org/x/crypto"
   revision = "81e90905daefcd6fd217b62423c0908922eadb30"
 
