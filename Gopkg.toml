@@ -130,32 +130,12 @@
   revision = "44145f04b68cf362d9c4df2182967c2275eaefed"
 
 [[override]]
-  name = "github.com/golang/groupcache"
-  revision = "02826c3e79038b59d737d3b1c0a1d937f71a4433"
-
-[[override]]
   name = "github.com/google/gofuzz"
   revision = "44d81051d367757e1c7c6a5a86423ece9afcf63c"
 
 [[override]]
   name = "github.com/googleapis/gnostic"
   revision = "0c5108395e2debce0d731cf0287ddf7242066aba"
-
-[[override]]
-  name = "github.com/gophercloud/gophercloud"
-  revision = "6da026c32e2d622cc242d32984259c77237aefe1"
-
-[[override]]
-  name = "github.com/hashicorp/golang-lru"
-  revision = "a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4"
-
-[[override]]
-  name = "github.com/howeyc/gopass"
-  revision = "bf9dde6d0d2c004a008c27aaee91170c786f6db8"
-
-[[override]]
-  name = "github.com/imdario/mergo"
-  revision = "6633656539c1639d9d78127b7d47c622b5d7b6dc"
 
 [[override]]
   name = "github.com/json-iterator/go"
