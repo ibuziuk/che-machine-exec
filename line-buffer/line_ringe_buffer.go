@@ -13,10 +13,10 @@
 package line_buffer
 
 import (
-	"bytes"
 	"container/ring"
-	"strings"
 	"sync"
+	"bytes"
+	"strings"
 )
 
 const lineBufferSize = 1000
@@ -26,6 +26,9 @@ type LineRingBuffer struct {
 	lock *sync.Mutex
 }
 
+/**
+ Create new ring buffer to accumulate and restore machine-exec output.
+ */
 func New() *LineRingBuffer {
 	return &LineRingBuffer{ring.New(lineBufferSize), &sync.Mutex{}}
 }
