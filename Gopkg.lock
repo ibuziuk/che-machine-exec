@@ -10,12 +10,12 @@
   version = "v0.3.8"
 
 [[projects]]
-  digest = "1:f3b6664d93ffaee13d93f1dcab4f30ce64204c4b24dda73695ecc8e686645d1b"
+  digest = "1:8011d6367a04c40f1a9f50274e5e22b1cd5c05104d87cd8cf21d5a56c0cc3bd8"
   name = "github.com/Sirupsen/logrus"
   packages = ["."]
   pruneopts = "UT"
-  revision = "d26492970760ca5d33129d2d799e34be5c4782eb"
-  version = "v0.11.0"
+  revision = "ba1b36c82c5e05c4f912a88eab0dcd91a171688f"
+  version = "v0.11.5"
 
 [[projects]]
   digest = "1:6b5297ed2caa15361468ddbb4add02a8498b2c1082c3ac0a7eb0dde01f13428a"
