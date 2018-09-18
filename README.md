@@ -1,4 +1,4 @@
-# CHE macine exec
+# CHE machine exec
 
 Go-lang server side to creation machine-execs for Eclipse CHE workspaces.
 Uses to spawn terminal or command processes.
