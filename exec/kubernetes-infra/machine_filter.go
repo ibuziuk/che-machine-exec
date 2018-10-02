@@ -14,7 +14,6 @@ package kubernetes_infra
 
 import (
 	"errors"
-	"fmt"
 	"github.com/eclipse/che-machine-exec/api/model"
 	"io/ioutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -48,10 +47,10 @@ func findMachineContainerInfo(execManager KubernetesExecManager, identifier *mod
 	}
 
 	if len(pods.Items) > 1 {
-		return nil, errors.New("unexpected exception! Filter found more than one pods for workspace " + WsId)
+		return nil, errors.New("unexpected exception! Filter found more than one pods for workspace: " + identifier.WsId)
 	}
 	if len(pods.Items) == 0 {
-		return nil, errors.New("pod was not found for workspace: " + WsId)
+		return nil, errors.New("pod was not found for workspace: " + identifier.WsId)
 	}
 
 	pod := pods.Items[0]
@@ -67,10 +66,8 @@ func findMachineContainerInfo(execManager KubernetesExecManager, identifier *mod
 	}
 
 	if containerName == "" {
-		return nil, errors.New("machine with name " + identifier.MachineName + " was not found. For workspace " + WsId)
+		return nil, errors.New("machine with name " + identifier.MachineName + " was not found. For workspace: " + identifier.WsId)
 	}
-
-	fmt.Println("Found container with name '" + containerName + "' and workspace " + WsId)
 
 	return &KubernetesContainerInfo{name: containerName, podName: pod.Name, namespace: pod.Namespace}, nil
 }
