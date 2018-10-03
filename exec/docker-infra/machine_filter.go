@@ -39,7 +39,7 @@ func findMachineContainer(execManager DockerMachineExecManager, identifier *mode
 		return nil, errors.New("filter found more than one machine")
 	}
 	if len(containers) == 0 {
-		return nil, errors.New("machine was not found")
+		return nil, errors.New("machine " + identifier.MachineName + " was not found")
 	}
 
 	return &containers[0], nil
