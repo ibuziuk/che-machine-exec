@@ -15,8 +15,9 @@ package kubernetes_infra
 import (
 	"errors"
 	"github.com/eclipse/che-machine-exec/api/model"
-	"io/ioutil"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
 const (
@@ -26,48 +27,47 @@ const (
 )
 
 type KubernetesContainerInfo struct {
-	name      string
-	podName   string
-	namespace string
+	name    string
+	podName string
 }
 
-// Find container name by pod label: "wsId" and container environment variables "machineName".
-func findMachineContainerInfo(execManager KubernetesExecManager, identifier *model.MachineIdentifier) (*KubernetesContainerInfo, error) {
+// Find container information by pod label: "wsId" and container environment variables "machineName".
+func findContainerInfo(podGetter corev1.PodsGetter, namespace string, identifier *model.MachineIdentifier) (*KubernetesContainerInfo, error) {
+	filterOptions := metav1.ListOptions{LabelSelector: WsId + "=" + identifier.WsId}
 
-	nsBytes, err := ioutil.ReadFile(NameSpaceFile)
-	if err != nil {
-		return nil, err
-	}
-	namespace := string(nsBytes)
-	// namespace := ""
-
-	pods, err := execManager.client.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: WsId + "=" + identifier.WsId})
+	wsPods, err := podGetter.Pods(namespace).List(filterOptions)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(pods.Items) > 1 {
-		return nil, errors.New("unexpected exception! Filter found more than one pods for workspace: " + identifier.WsId)
-	}
-	if len(pods.Items) == 0 {
+	if len(wsPods.Items) == 0 {
 		return nil, errors.New("pod was not found for workspace: " + identifier.WsId)
 	}
 
-	pod := pods.Items[0]
-	containers := pod.Spec.Containers
-
-	var containerName string
-	for _, container := range containers {
-		for _, env := range container.Env {
-			if env.Name == MachineName && env.Value == identifier.MachineName {
-				containerName = container.Name
-			}
+	var containerName *string
+	var pod v1.Pod
+	for _, pod = range wsPods.Items {
+		containerName = findContainerName(pod, identifier.MachineName)
+		if containerName != nil {
+			containerInfo := &KubernetesContainerInfo{
+				name:    *containerName,
+				podName: pod.Name}
+			return containerInfo, nil
 		}
 	}
 
-	if containerName == "" {
-		return nil, errors.New("machine with name " + identifier.MachineName + " was not found. For workspace: " + identifier.WsId)
-	}
+	return nil, errors.New("machine with name " + identifier.MachineName + " was not found. For workspace: " + identifier.WsId)
+}
 
-	return &KubernetesContainerInfo{name: containerName, podName: pod.Name, namespace: pod.Namespace}, nil
+func findContainerName(pod v1.Pod, machineName string) *string {
+	containers := pod.Spec.Containers
+
+	for _, container := range containers {
+		for _, env := range container.Env {
+			if env.Name == MachineName && env.Value == machineName {
+				return &container.Name
+			}
+		}
+	}
+	return nil
 }

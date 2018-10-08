@@ -107,6 +107,10 @@
 [[override]]
   name = "github.com/stretchr/testify"
   version = "=v1.2.1"
+
+[[override]]
+  name = "github.com/stretchr/objx"
+  version = "=v0.1.0"
 # Test dependencies #
 
 [[override]]

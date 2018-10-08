@@ -21,6 +21,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 	"strconv"
@@ -34,7 +35,8 @@ type MachineExecs struct {
 }
 
 type KubernetesExecManager struct {
-	client *kubernetes.Clientset
+	core      corev1.CoreV1Interface
+	nameSpace string
 }
 
 var (
@@ -57,7 +59,10 @@ const (
  * Create new instance of the kubernetes exec manager
  */
 func New() KubernetesExecManager {
-	return KubernetesExecManager{client: createClient()}
+	return KubernetesExecManager{
+		core:      createClient().CoreV1(),
+		nameSpace: GetNameSpace(),
+	}
 }
 
 func createClient() *kubernetes.Clientset {
@@ -79,15 +84,15 @@ func createClient() *kubernetes.Clientset {
 }
 
 func (manager KubernetesExecManager) Create(machineExec *model.MachineExec) (int, error) {
-	containerInfo, err := findMachineContainerInfo(manager, &machineExec.Identifier)
+	containerInfo, err := findContainerInfo(manager.core, manager.nameSpace, &machineExec.Identifier)
 	if err != nil {
 		return -1, err
 	}
 
-	req := manager.client.CoreV1().RESTClient().Post().
+	req := manager.core.RESTClient().Post().
 		Resource(Pods).
 		Name(containerInfo.podName).
-		Namespace(containerInfo.namespace).
+		Namespace(manager.nameSpace).
 		SubResource(Exec).
 		// set up params
 		VersionedParams(&v1.PodExecOptions{
