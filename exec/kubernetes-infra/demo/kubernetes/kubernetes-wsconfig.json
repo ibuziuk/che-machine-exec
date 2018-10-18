@@ -46,7 +46,7 @@
       },
       "recipe": {
         "type": "kubernetes",
-        "content": "---\nkind: List\nitems:\n-\n  apiVersion: v1\n  kind: Pod\n  metadata:\n    name: ws\n  spec:\n    containers:\n      -\n        image: aandrienko/che-theia-0:latest\n        name: theia\n      -\n        image: aandrienko/che-machine-exec:latest\n        name: machine-exec\n",
+        "content": "---\nkind: List\nitems:\n-\n  apiVersion: v1\n  kind: Pod\n  metadata:\n    name: ws\n  spec:\n    containers:\n      -\n        image: eclipse/che-theia:plugin-id-nightly\n        name: theia\n      -\n        image: wsskeleton/che-machine-exec\n        name: machine-exec\n",
         "contentType": "application/x-yaml"
       }
     }
