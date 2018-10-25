@@ -53,12 +53,12 @@ cd ~/projects/che/deploy/openshift/
 ```bash
 ./ocp.sh --run-ocp --deploy-che --no-pull --debug --deploy-che-plugin-registry --multiuser
 ```
-In the output You will get link to the deployed Eclipse CHE project. Use it to login to Eclipse CHE. 
-> Notice: for ocp.sh You could use argument `--setup-ocp-oauth`, but in this case 
+In the output You will get link to the deployed Eclipse CHE project. Use it to login to Eclipse CHE.
+> Notice: for ocp.sh You could use argument `--setup-ocp-oauth`, but in this case
 You should use "Openshift v3" auth on the login page.
 
 Register new user on the login page. After login You will be redirected to
-the Eclipse CHE user dashboard. 
+the Eclipse CHE user dashboard.
 
 Create new workspace from openshift stack 'Java Theia on OpenShift' or 'CHE 7 Preview' stack. Run workspace. When workspace will be running You will see Theia IDE. Then You can [test che-machine-exec with help che-theia-terminal-extension](#test-che-machine-exec-with-help-che-theia-terminal-extension) and [test che-machine-exec with help che-theia-task-plugin](#test-che-machine-exec-with-help-che-theia-task-plugin)
 
@@ -125,7 +125,7 @@ Run deploy_che.sh script with arguments:
 export CHE_INFRA_KUBERNETES_MASTER__URL=${CHE_INFRA_KUBERNETES_MASTER__URL} && ./deploy_che.sh --no-pull --debug --multiuser
 ```
 
-Create new workspace from openshift stack 'Java Theia on OpenShift' or 
+Create new workspace from openshift stack 'Java Theia on OpenShift' or
 'CHE 7 Preview' stack. Run workspace. When workspace will be running You will see Theia IDE. Then You can [test che-machine-exec with help che-theia-terminal-extension](#test-che-machine-exec-with-help-che-theia-terminal-extension) and [test che-machine-exec with help che-theia-task-plugin](#test-che-machine-exec-with-help-che-theia-task-plugin)
 
 # Test on the Kubernetes (MiniKube)
@@ -155,7 +155,7 @@ kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-adm
 kubectl config use-context minikube
 ```
 - Install tiller on your cluster:
-  - Create a [tiller serviceAccount]: 
+  - Create a [tiller serviceAccount]:
     ```bash
     kubectl create serviceaccount tiller --namespace kube-system
     ```
@@ -163,7 +163,7 @@ kubectl config use-context minikube
       ```bash
       kubectl apply -f ./tiller-rbac.yaml
       ```
-  - Install tiller itself: 
+  - Install tiller itself:
     ```bash
     helm init --service-account tiller
     ```
@@ -184,73 +184,9 @@ There two configurations to deploy CHE on the Kubernetes:
 > Notice You can track deploy CHE with help Minikube dashboard:
   ```bash
   minikube dashboard
-  ```    
+  ```
 
-When Eclipse CHE will be deployed on the Minikube You can test che-machine-exec. Unfortunately, we don't have Kubernetes stack with included Theia IDE. So create workspace from 
-"Default Java Stack with JDK 8, Maven and Tomcat.", but then replace workspace config in the user dashboard by this one:
-
-```json
-{
-  "environments": {
-    "default": {
-      "machines": {
-        "ws/theia": {
-          "attributes": {},
-          "servers": {
-            "theia": {
-              "protocol": "http",
-              "port": "3000",
-              "path": "/",
-              "attributes": {
-                "type": "ide"
-              }
-            },
-            "theia-dev": {
-              "protocol": "http",
-              "port": "3030",
-              "attributes": {
-                "type": "ide-dev"
-              }
-            }
-          },
-          "volumes": {
-            "projects": {
-              "path": "/projects"
-            }
-          },
-          "installers": [],
-          "env": {
-            "HOSTED_PLUGIN_HOSTNAME": "0.0.0.0"
-          }
-        },
-        "ws/machine-exec": {
-          "servers": {
-            "machine-exec": {
-              "attributes": {
-                "type": "terminal"
-              },
-              "port": "4444",
-              "protocol": "ws"
-            }
-          },
-          "attributes": {}
-        }
-      },
-      "recipe": {
-        "type": "kubernetes",
-        "content": "---\nkind: List\nitems:\n-\n  apiVersion: v1\n  kind: Pod\n  metadata:\n    name: ws\n  spec:\n    containers:\n      -\n        image: eclipse/che-theia:plugin-id-nightly\n        name: theia\n      -\n        image: wsskeleton/che-machine-exec\n        name: machine-exec\n",
-        "contentType": "application/x-yaml"
-      }
-    }
-  },
-  "defaultEnv": "default",
-  "name": "theia",
-  "projects": [],
-  "commands": []
-}
-```
-
- Save workspace config and run workspace. When workspace will be running You will see Theia IDE. Then You can [test che-machine-exec with help che-theia-terminal-extension](#test-che-machine-exec-with-help-che-theia-terminal-extension) and [test che-machine-exec with help che-theia-task-plugin](#test-che-machine-exec-with-help-che-theia-task-plugin)
+Create new workspace from stack 'Java Theia on Kubernetes'. Run workspace. When workspace will be running You will see Theia IDE. Then You can [test che-machine-exec with help che-theia-terminal-extension](#test-che-machine-exec-with-help-che-theia-terminal-extension) and [test che-machine-exec with help che-theia-task-plugin](#test-che-machine-exec-with-help-che-theia-task-plugin)
 
 # Prepare Eclipse CHE to deploy
 
