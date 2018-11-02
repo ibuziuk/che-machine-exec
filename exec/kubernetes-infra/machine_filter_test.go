@@ -2,8 +2,8 @@ package kubernetes_infra
 
 import (
 	"errors"
-	"github.com/eclipse/che-machine-exec/api/model"
-	"github.com/eclipse/che-machine-exec/mocks"
+	"github.com/ws-skeleton/che-machine-exec/api/model"
+	"github.com/ws-skeleton/che-machine-exec/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	corev1 "k8s.io/api/core/v1"

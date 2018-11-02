@@ -16,7 +16,7 @@ import (
 	"errors"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
-	"github.com/eclipse/che-machine-exec/api/model"
+	"github.com/ws-skeleton/che-machine-exec/api/model"
 	"golang.org/x/net/context"
 )
 

@@ -14,7 +14,7 @@ package websocket
 
 import (
 	"errors"
-	"github.com/eclipse/che-machine-exec/exec"
+	"github.com/ws-skeleton/che-machine-exec/exec"
 	"github.com/eclipse/che/agents/go-agents/core/rest"
 	"github.com/gorilla/websocket"
 	"log"

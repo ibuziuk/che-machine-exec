@@ -13,7 +13,7 @@
 package jsonrpc
 
 import (
-	"github.com/eclipse/che-machine-exec/api/model"
+	"github.com/ws-skeleton/che-machine-exec/api/model"
 	"github.com/eclipse/che/agents/go-agents/core/jsonrpc"
 )
 

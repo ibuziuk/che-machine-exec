@@ -16,7 +16,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/docker/docker/api/types"
-	"github.com/eclipse/che-machine-exec/line-buffer"
+	"github.com/ws-skeleton/che-machine-exec/line-buffer"
 	"github.com/gorilla/websocket"
 	"k8s.io/client-go/tools/remotecommand"
 	"log"

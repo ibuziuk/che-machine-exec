@@ -13,7 +13,7 @@
 package ws_conn
 
 import (
-	"github.com/eclipse/che-machine-exec/api/model"
+	"github.com/ws-skeleton/che-machine-exec/api/model"
 	"github.com/gorilla/websocket"
 	"log"
 )

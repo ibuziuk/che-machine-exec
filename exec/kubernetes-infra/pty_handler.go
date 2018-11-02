@@ -13,7 +13,7 @@
 package kubernetes_infra
 
 import (
-	"github.com/eclipse/che-machine-exec/api/model"
+	"github.com/ws-skeleton/che-machine-exec/api/model"
 	"k8s.io/client-go/tools/remotecommand"
 )
 

@@ -14,9 +14,9 @@ package kubernetes_infra
 
 import (
 	"errors"
-	"github.com/eclipse/che-machine-exec/api/model"
-	wsConnHandler "github.com/eclipse/che-machine-exec/exec/ws-conn"
-	"github.com/eclipse/che-machine-exec/line-buffer"
+	"github.com/ws-skeleton/che-machine-exec/api/model"
+	wsConnHandler "github.com/ws-skeleton/che-machine-exec/exec/ws-conn"
+	"github.com/ws-skeleton/che-machine-exec/line-buffer"
 	"github.com/gorilla/websocket"
 	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
