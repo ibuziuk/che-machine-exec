@@ -116,7 +116,7 @@ To deploy Eclipse CHE You can use [deploy_che.sh script](https://github.com/ecli
 
 Move to deploy_che.sh script:
 ```
-cd ~/projects/che/deploy/openshift/deploy_che.sh
+cd ~/projects/che/deploy/openshift
 ```
 
 Run deploy_che.sh script with arguments:
