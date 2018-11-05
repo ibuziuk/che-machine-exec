@@ -10,7 +10,7 @@ CHE machine exec uses json-rpc protocol to communication with client.
 Build docker image with che-machine-exec manually:
 
 ```bash
-docker build -t eclipse/che-machine-exec .
+docker build --no-cache -t eclipse/che-machine-exec .
 ```
 
 # Run docker container

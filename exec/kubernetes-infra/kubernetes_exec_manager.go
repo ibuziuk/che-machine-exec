@@ -148,6 +148,8 @@ func (KubernetesExecManager) Attach(id int, conn *websocket.Conn) error {
 		return conn.WriteMessage(websocket.TextMessage, []byte(restoreContent))
 	}
 
+	go saveActivity(machineExec)
+
 	ptyHandler := PtyHandlerImpl{machineExec: machineExec}
 	machineExec.Buffer = line_buffer.New()
 
