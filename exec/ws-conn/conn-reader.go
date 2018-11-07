@@ -13,9 +13,10 @@
 package ws_conn
 
 import (
-	"github.com/ws-skeleton/che-machine-exec/api/model"
 	"github.com/gorilla/websocket"
+	"github.com/ws-skeleton/che-machine-exec/api/model"
 	"log"
+	"net"
 )
 
 func ReadWebSocketData(machineExec *model.MachineExec, wsConn *websocket.Conn) {
@@ -23,7 +24,7 @@ func ReadWebSocketData(machineExec *model.MachineExec, wsConn *websocket.Conn) {
 
 	for {
 		msgType, wsBytes, err := wsConn.ReadMessage()
-		if err != nil {
+		if err != nil && IsNormalWSError(err) {
 			log.Printf("failed to read ws-conn message") // todo better handle ws-conn error
 			return
 		}
@@ -34,4 +35,13 @@ func ReadWebSocketData(machineExec *model.MachineExec, wsConn *websocket.Conn) {
 
 		machineExec.MsgChan <- wsBytes
 	}
+}
+
+func IsNormalWSError(err error) bool {
+	closeErr, ok := err.(*websocket.CloseError)
+	if ok && (closeErr.Code == websocket.CloseGoingAway || closeErr.Code == websocket.CloseNormalClosure) {
+		return true
+	}
+	_, ok = err.(*net.OpError)
+	return ok
 }

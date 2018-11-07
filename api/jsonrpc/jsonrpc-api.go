@@ -13,8 +13,8 @@
 package jsonrpc
 
 import (
-	"github.com/ws-skeleton/che-machine-exec/api/model"
 	"github.com/eclipse/che/agents/go-agents/core/jsonrpc"
+	"github.com/ws-skeleton/che-machine-exec/api/model"
 )
 
 // Constants that represent RPC methods identifiers.

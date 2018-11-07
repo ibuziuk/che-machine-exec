@@ -13,10 +13,10 @@
 package exec
 
 import (
+	"github.com/gorilla/websocket"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 	"github.com/ws-skeleton/che-machine-exec/exec/docker-infra"
 	"github.com/ws-skeleton/che-machine-exec/exec/kubernetes-infra"
-	"github.com/gorilla/websocket"
 	"log"
 	"os"
 )
@@ -24,7 +24,8 @@ import (
 var execManager ExecManager
 
 type ExecManager interface {
-	Create(*model.MachineExec) (int, error)
+	// add TerminalHelthWatcher
+	Create(machineExec *model.MachineExec, onExit func(done bool), onError func(err error)) (int, error)
 	Check(id int) (int, error)
 	Attach(id int, conn *websocket.Conn) error
 	Resize(id int, cols uint, rows uint) error

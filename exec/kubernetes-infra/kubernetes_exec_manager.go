@@ -14,16 +14,18 @@ package kubernetes_infra
 
 import (
 	"errors"
+	"fmt"
+	"github.com/gorilla/websocket"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 	wsConnHandler "github.com/ws-skeleton/che-machine-exec/exec/ws-conn"
 	"github.com/ws-skeleton/che-machine-exec/line-buffer"
-	"github.com/gorilla/websocket"
 	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
+	"log"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -83,7 +85,7 @@ func createClient() *kubernetes.Clientset {
 	return clientset
 }
 
-func (manager KubernetesExecManager) Create(machineExec *model.MachineExec) (int, error) {
+func (manager KubernetesExecManager) Create(machineExec *model.MachineExec, onExit func(done bool), onError func(err error)) (int, error) {
 	containerInfo, err := findContainerInfo(manager.core, manager.nameSpace, &machineExec.Identifier)
 	if err != nil {
 		return -1, err
@@ -118,10 +120,35 @@ func (manager KubernetesExecManager) Create(machineExec *model.MachineExec) (int
 	machineExec.WsConnsLock = &sync.Mutex{}
 	machineExec.WsConns = make([]*websocket.Conn, 0)
 	machineExec.SizeChan = make(chan remotecommand.TerminalSize)
+	machineExec.ExitChan = make(chan bool)
+	machineExec.ErrorChan = make(chan error)
 
 	machineExecs.execMap[machineExec.ID] = machineExec
 
+	go func() {
+
+		fmt.Println("Alive thread")
+		select {
+		case execComplete := <-machineExec.ExitChan:
+			removeExec(machineExec)
+			log.Println("clean up map")
+			onExit(execComplete)
+		case err := <-machineExec.ErrorChan:
+			removeExec(machineExec)
+			log.Println("clean up map")
+			onError(err)
+		}
+		fmt.Println("done")
+	}()
+
 	return machineExec.ID, nil
+}
+
+func removeExec(exec *model.MachineExec) {
+	defer machineExecs.mutex.Unlock()
+
+	machineExecs.mutex.Lock()
+	delete(machineExecs.execMap, exec.ID)
 }
 
 func (KubernetesExecManager) Check(id int) (int, error) {
@@ -153,13 +180,21 @@ func (KubernetesExecManager) Attach(id int, conn *websocket.Conn) error {
 	ptyHandler := PtyHandlerImpl{machineExec: machineExec}
 	machineExec.Buffer = line_buffer.New()
 
-	return machineExec.Executor.Stream(remotecommand.StreamOptions{
+	err := machineExec.Executor.Stream(remotecommand.StreamOptions{
 		Stdin:             ptyHandler,
 		Stdout:            ptyHandler,
 		Stderr:            ptyHandler,
 		TerminalSizeQueue: ptyHandler,
 		Tty:               machineExec.Tty,
 	})
+
+	if err != nil {
+		machineExec.ErrorChan <- err
+	} else {
+		machineExec.ExitChan <- true
+	}
+
+	return err
 }
 
 func (KubernetesExecManager) Resize(id int, cols uint, rows uint) error {

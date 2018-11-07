@@ -16,10 +16,12 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/docker/docker/api/types"
-	"github.com/ws-skeleton/che-machine-exec/line-buffer"
 	"github.com/gorilla/websocket"
+	"github.com/ws-skeleton/che-machine-exec/line-buffer"
+	"io"
 	"k8s.io/client-go/tools/remotecommand"
 	"log"
+	"net"
 	"sync"
 )
 
@@ -41,6 +43,9 @@ type MachineExec struct {
 	Cols       int               `json:"cols"`
 	Rows       int               `json:"rows"`
 
+	ExitChan  chan bool
+	ErrorChan chan error
+
 	// unique client id, real execId should be hidden from client to prevent serialization
 	ID int `json:"id"`
 
@@ -59,6 +64,19 @@ type MachineExec struct {
 
 	// Todo Refactoring: Create separated code layer and move it.
 	Buffer *line_buffer.LineRingBuffer
+}
+
+type TerminalExitEvent struct {
+	TerminalId int `json:"terminalId"`
+}
+
+type TerminalErrorEvent struct {
+	TerminalId    int            `json:"terminalId"`
+	TerminalError *TerminalError `json:"error"`
+}
+
+type TerminalError struct {
+	Stack string `json:"stack"`
 }
 
 func (machineExec *MachineExec) AddWebSocket(wsConn *websocket.Conn) {
@@ -113,8 +131,12 @@ func sendExecOutputToWebsockets(machineExec *MachineExec) {
 	for {
 		rbSize, err := hjReader.Read(buf)
 		if err != nil {
-			//todo handle EOF error
-			fmt.Println("failed to read exec stdOut/stdError stream!!! " + err.Error())
+			if err == io.EOF {
+				machineExec.ExitChan <- true
+			} else {
+				machineExec.ErrorChan <- err
+				log.Println("failed to read exec stdOut/stdError stream. " + err.Error())
+			}
 			return
 		}
 
@@ -143,9 +165,18 @@ func (machineExec *MachineExec) WriteDataToWsConnections(data []byte) {
 	machineExec.Buffer.Write(data)
 	// send data to the all connected clients
 	for _, wsConn := range machineExec.WsConns {
-		if err := wsConn.WriteMessage(websocket.TextMessage, data); err != nil {
-			fmt.Println("failed to write to ws-conn message!!!" + err.Error())
+		if err := wsConn.WriteMessage(websocket.TextMessage, data); err != nil && !IsNormalWSError(err) {
+			log.Println("failed to write to ws-conn message!!!" + err.Error())
 			machineExec.RemoveWebSocket(wsConn)
 		}
 	}
+}
+
+func IsNormalWSError(err error) bool {
+	closeErr, ok := err.(*websocket.CloseError)
+	if ok && (closeErr.Code == websocket.CloseGoingAway || closeErr.Code == websocket.CloseNormalClosure) {
+		return true
+	}
+	_, ok = err.(*net.OpError)
+	return ok
 }

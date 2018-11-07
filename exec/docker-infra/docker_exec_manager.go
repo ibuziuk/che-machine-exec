@@ -17,11 +17,12 @@ import (
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/gorilla/websocket"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 	wsConnHandler "github.com/ws-skeleton/che-machine-exec/exec/ws-conn"
 	"github.com/ws-skeleton/che-machine-exec/line-buffer"
-	"github.com/gorilla/websocket"
 	"golang.org/x/net/context"
+	"log"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -58,7 +59,7 @@ func createClient() *client.Client {
 	return dockerClient
 }
 
-func (manager DockerMachineExecManager) Create(machineExec *model.MachineExec) (int, error) {
+func (manager DockerMachineExecManager) Create(machineExec *model.MachineExec, onExit func(done bool), onError func(err error)) (int, error) {
 	container, err := findMachineContainer(manager, &machineExec.Identifier)
 	if err != nil {
 		return -1, err
@@ -86,12 +87,38 @@ func (manager DockerMachineExecManager) Create(machineExec *model.MachineExec) (
 	machineExec.MsgChan = make(chan []byte)
 	machineExec.WsConnsLock = &sync.Mutex{}
 	machineExec.WsConns = make([]*websocket.Conn, 0)
+	machineExec.ExitChan = make(chan bool)
+	machineExec.ErrorChan = make(chan error)
 
 	machineExecs.execMap[machineExec.ID] = machineExec
 
 	fmt.Println("Create exec ", machineExec.ID, "execId", machineExec.ExecId)
 
+	go func() {
+
+		fmt.Println("Alive thread")
+		select {
+		case execComplete := <-machineExec.ExitChan:
+			removeExec(machineExec)
+			log.Println("clean up map")
+			onExit(execComplete)
+		case err := <-machineExec.ErrorChan:
+			removeExec(machineExec)
+			log.Println("clean up map")
+			onError(err)
+		}
+		fmt.Println("done")
+	}()
+
 	return machineExec.ID, nil
+}
+
+// make it public !!!!
+func removeExec(exec *model.MachineExec) {
+	defer machineExecs.mutex.Unlock()
+
+	machineExecs.mutex.Lock()
+	delete(machineExecs.execMap, exec.ID)
 }
 
 func (manager DockerMachineExecManager) Check(id int) (int, error) {

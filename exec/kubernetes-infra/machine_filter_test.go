@@ -2,10 +2,10 @@ package kubernetes_infra
 
 import (
 	"errors"
-	"github.com/ws-skeleton/che-machine-exec/api/model"
-	"github.com/ws-skeleton/che-machine-exec/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/ws-skeleton/che-machine-exec/api/model"
+	"github.com/ws-skeleton/che-machine-exec/mocks"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"

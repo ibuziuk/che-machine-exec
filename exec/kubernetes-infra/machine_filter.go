@@ -21,9 +21,8 @@ import (
 )
 
 const (
-	WsId          = "che.workspace_id"
-	MachineName   = "CHE_MACHINE_NAME"
-	NameSpaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+	WsId        = "che.workspace_id"
+	MachineName = "CHE_MACHINE_NAME"
 )
 
 type KubernetesContainerInfo struct {

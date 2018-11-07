@@ -14,11 +14,12 @@ package main
 
 import (
 	"flag"
-	jsonRpcApi "github.com/ws-skeleton/che-machine-exec/api/jsonrpc"
-	"github.com/ws-skeleton/che-machine-exec/api/websocket"
 	"github.com/eclipse/che/agents/go-agents/core/jsonrpc"
 	"github.com/eclipse/che/agents/go-agents/core/jsonrpc/jsonrpcws"
 	"github.com/eclipse/che/agents/go-agents/core/rest"
+	jsonRpcApi "github.com/ws-skeleton/che-machine-exec/api/jsonrpc"
+	"github.com/ws-skeleton/che-machine-exec/api/websocket"
+	"log"
 	"net/http"
 	"time"
 )
@@ -79,5 +80,7 @@ func main() {
 		ReadTimeout:  10 * time.Second,
 	}
 
-	server.ListenAndServe()
+	if err := server.ListenAndServe(); err != nil {
+		log.Println("Unable to start server. Cause: ", err.Error())
+	}
 }
