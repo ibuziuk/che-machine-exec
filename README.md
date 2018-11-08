@@ -172,16 +172,19 @@ kubectl config use-context minikube
   minikube addons enable ingress
   ```
 
-There two configurations to deploy CHE on the Kubernetes:
- - first one: for each new workspace Eclipse CHE creates separated namespace. In this case che-machine-exec doesn't work from the box yet, because: https://github.com/eclipse/che/issues/11349:
+There are two configurations to deploy Eclipse CHE on the Kubernetes:
+ - first one: for each new workspace Eclipse CHE creates separated namespace:
     ```bash
-      helm upgrade --install che --namespace che --set global.ingressDomain=<domain> ./
+      helm upgrade --install che --namespace che ./
     ```
- - second one: Eclipse CHE creates workspace in the same namespace. In this case che-machine-exec should work from the box. Deploy Eclipse CHE with command:
+ - second one: Eclipse CHE creates workspace in the same namespace:
     ```bash
     helm upgrade --install che --namespace=che --set global.cheWorkspacesNamespace=che ./
     ```
-> Notice You can track deploy CHE with help Minikube dashboard:
+
+> Info: To delploy multi-user CHE you can use parameter: `-f ./values/multi-user.yaml`. Also You can set ingress domain with help parameter: `--set global.ingressDomain=<domain>`
+
+> Notice: You can track deploy CHE with help Minikube dashboard:
   ```bash
   minikube dashboard
   ```
