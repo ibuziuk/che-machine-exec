@@ -25,7 +25,8 @@ var execManager ExecManager
 
 type ExecManager interface {
 	// add TerminalHelthWatcher
-	Create(machineExec *model.MachineExec, onExit func(done bool), onError func(err error)) (int, error)
+	Create(machineExec *model.MachineExec) (int, error)
+	Remove(execId int)
 	Check(id int) (int, error)
 	Attach(id int, conn *websocket.Conn) error
 	Resize(id int, cols uint, rows uint) error

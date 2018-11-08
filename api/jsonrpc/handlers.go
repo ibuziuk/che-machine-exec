@@ -13,7 +13,6 @@
 package jsonrpc
 
 import (
-	"fmt"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 
 	"github.com/eclipse/che/agents/go-agents/core/jsonrpc"
@@ -44,22 +43,11 @@ var (
 func jsonRpcCreateExec(tunnel *jsonrpc.Tunnel, params interface{}, t jsonrpc.RespTransmitter) {
 	machineExec := params.(*model.MachineExec)
 
-	id, err := execManager.Create(machineExec,
-		func(done bool) {
-			terminalExitEvent := &model.TerminalExitEvent{TerminalId: machineExec.ID}
+	id, err := execManager.Create(machineExec)
 
-			if err := tunnel.Notify("onTerminalExitChanged", terminalExitEvent); err != nil {
-				fmt.Println("Unable to send close terminal message")
-			}
-		},
-		func(err error) {
-			terminalError := &model.TerminalError{Stack: err.Error()}
-			terminalErrorEvent := &model.TerminalErrorEvent{TerminalId: machineExec.ID, TerminalError: terminalError}
+	healthWatcher := exec.NewHealthWatcher(machineExec, tunnel, execManager)
+	healthWatcher.CleanUpOnExitOrError()
 
-			if err := tunnel.Notify("onTerminalError", terminalErrorEvent); err != nil {
-				fmt.Println("Unable to send error terminal message")
-			}
-		})
 	if err != nil {
 		log.Println("Unable to create machine exec. Cause: ", err.Error()) // rework to terminal error too
 		t.SendError(jsonrpc.NewArgsError(err))

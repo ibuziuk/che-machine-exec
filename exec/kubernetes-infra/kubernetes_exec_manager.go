@@ -14,7 +14,6 @@ package kubernetes_infra
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 	wsConnHandler "github.com/ws-skeleton/che-machine-exec/exec/ws-conn"
@@ -25,7 +24,6 @@ import (
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
-	"log"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -60,8 +58,8 @@ const (
 /**
  * Create new instance of the kubernetes exec manager
  */
-func New() KubernetesExecManager {
-	return KubernetesExecManager{
+func New() *KubernetesExecManager {
+	return &KubernetesExecManager{
 		core:      createClient().CoreV1(),
 		nameSpace: GetNameSpace(),
 	}
@@ -85,7 +83,7 @@ func createClient() *kubernetes.Clientset {
 	return clientset
 }
 
-func (manager KubernetesExecManager) Create(machineExec *model.MachineExec, onExit func(done bool), onError func(err error)) (int, error) {
+func (manager *KubernetesExecManager) Create(machineExec *model.MachineExec) (int, error) {
 	containerInfo, err := findContainerInfo(manager.core, manager.nameSpace, &machineExec.Identifier)
 	if err != nil {
 		return -1, err
@@ -125,33 +123,18 @@ func (manager KubernetesExecManager) Create(machineExec *model.MachineExec, onEx
 
 	machineExecs.execMap[machineExec.ID] = machineExec
 
-	go func() {
-
-		fmt.Println("Alive thread")
-		select {
-		case execComplete := <-machineExec.ExitChan:
-			removeExec(machineExec)
-			log.Println("clean up map")
-			onExit(execComplete)
-		case err := <-machineExec.ErrorChan:
-			removeExec(machineExec)
-			log.Println("clean up map")
-			onError(err)
-		}
-		fmt.Println("done")
-	}()
-
 	return machineExec.ID, nil
 }
 
-func removeExec(exec *model.MachineExec) {
+// Clean up information about exec
+func (*KubernetesExecManager) Remove(execId int) {
 	defer machineExecs.mutex.Unlock()
 
 	machineExecs.mutex.Lock()
-	delete(machineExecs.execMap, exec.ID)
+	delete(machineExecs.execMap, execId)
 }
 
-func (KubernetesExecManager) Check(id int) (int, error) {
+func (*KubernetesExecManager) Check(id int) (int, error) {
 	machineExec := getById(id)
 	if machineExec == nil {
 		return -1, errors.New("Exec '" + strconv.Itoa(id) + "' was not found")
@@ -159,7 +142,7 @@ func (KubernetesExecManager) Check(id int) (int, error) {
 	return machineExec.ID, nil
 }
 
-func (KubernetesExecManager) Attach(id int, conn *websocket.Conn) error {
+func (*KubernetesExecManager) Attach(id int, conn *websocket.Conn) error {
 	machineExec := getById(id)
 	if machineExec == nil {
 		return errors.New("Exec '" + strconv.Itoa(id) + "' to attach was not found")
@@ -197,7 +180,7 @@ func (KubernetesExecManager) Attach(id int, conn *websocket.Conn) error {
 	return err
 }
 
-func (KubernetesExecManager) Resize(id int, cols uint, rows uint) error {
+func (*KubernetesExecManager) Resize(id int, cols uint, rows uint) error {
 	machineExec := getById(id)
 	if machineExec == nil {
 		return errors.New("Exec to resize '" + strconv.Itoa(id) + "' was not found")
