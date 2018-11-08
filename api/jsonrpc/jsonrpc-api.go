@@ -22,8 +22,6 @@ const (
 	CreateMethod = "create"
 	CheckMethod  = "check"
 	ResizeMethod = "resize"
-	OnTerminalExitChanged = "onTerminalExitChanged"
-	OnTerminalError = "onTerminalError"
 )
 
 // RPCRoutes defines process jsonrpc routes.

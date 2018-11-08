@@ -1,22 +1,26 @@
 package exec
 
 import (
-	tunner "github.com/eclipse/che/agents/go-agents/core/jsonrpc"
-	"github.com/ws-skeleton/che-machine-exec/api/jsonrpc"
+	"github.com/eclipse/che/agents/go-agents/core/jsonrpc"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 	"log"
+)
+
+const (
+	OnTerminalExitChanged = "onTerminalExitChanged"
+	OnTerminalError = "onTerminalError"
 )
 
 // Exec health watcher. This watcher cleans up exec resources
 // and sends notification to the subscribed clients in case exec error or exit.
 type HealthWatcher struct {
-	tunnel      *tunner.Tunnel
+	tunnel      *jsonrpc.Tunnel
 	execManager ExecManager
 	exec        *model.MachineExec
 }
 
 // Create new exec health watcher
-func NewHealthWatcher(exec *model.MachineExec, tunnel *tunner.Tunnel, execManager ExecManager) *HealthWatcher {
+func NewHealthWatcher(exec *model.MachineExec, tunnel *jsonrpc.Tunnel, execManager ExecManager) *HealthWatcher {
 	return &HealthWatcher{
 		exec:        exec,
 		tunnel:      tunnel,
@@ -44,7 +48,7 @@ func (watcher *HealthWatcher) CleanUpOnExitOrError() {
 func (watcher *HealthWatcher) notifyClientsAboutExit() {
 	terminalExitEvent := &model.TerminalExitEvent{TerminalId: watcher.exec.ID}
 
-	if err := watcher.tunnel.Notify(jsonrpc.OnTerminalExitChanged, terminalExitEvent); err != nil {
+	if err := watcher.tunnel.Notify(OnTerminalExitChanged, terminalExitEvent); err != nil {
 		log.Println("Unable to send close terminal message")
 	}
 }
@@ -53,7 +57,7 @@ func (watcher *HealthWatcher) notifyClientsAboutError(err error) {
 	terminalError := &model.TerminalError{Stack: err.Error()}
 	terminalErrorEvent := &model.TerminalErrorEvent{TerminalId: watcher.exec.ID, TerminalError: terminalError}
 
-	if err := watcher.tunnel.Notify(jsonrpc.OnTerminalError, terminalErrorEvent); err != nil {
+	if err := watcher.tunnel.Notify(OnTerminalError, terminalErrorEvent); err != nil {
 		log.Println("Unable to send error terminal message")
 	}
 }
