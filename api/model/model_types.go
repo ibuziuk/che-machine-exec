@@ -16,7 +16,9 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/docker/docker/api/types"
+	"github.com/eclipse/che/agents/go-agents/core/event"
 	"github.com/gorilla/websocket"
+	"github.com/ws-skeleton/che-machine-exec/api/jsonrpc"
 	"github.com/ws-skeleton/che-machine-exec/line-buffer"
 	"io"
 	"k8s.io/client-go/tools/remotecommand"
@@ -67,12 +69,24 @@ type MachineExec struct {
 }
 
 type TerminalExitEvent struct {
+	event.E
+
 	TerminalId int `json:"terminalId"`
 }
 
+func (*TerminalExitEvent) Type() string {
+	return jsonrpc.OnExecExit
+}
+
 type TerminalErrorEvent struct {
+	event.E
+
 	TerminalId    int            `json:"terminalId"`
 	TerminalError *TerminalError `json:"error"`
+}
+
+func (*TerminalErrorEvent) Type() string {
+	return jsonrpc.OnExecError
 }
 
 type TerminalError struct {
