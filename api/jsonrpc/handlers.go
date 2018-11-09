@@ -45,11 +45,11 @@ func jsonRpcCreateExec(tunnel *jsonrpc.Tunnel, params interface{}, t jsonrpc.Res
 
 	id, err := execManager.Create(machineExec)
 
-	healthWatcher := exec.NewHealthWatcher(machineExec, tunnel, execManager)
+	healthWatcher := exec.NewHealthWatcher(machineExec)
 	healthWatcher.CleanUpOnExitOrError()
 
 	if err != nil {
-		log.Println("Unable to create machine exec. Cause: ", err.Error()) // rework to terminal error too
+		log.Println("Unable to create machine exec. Cause: ", err.Error())
 		t.SendError(jsonrpc.NewArgsError(err))
 	}
 

@@ -1,33 +1,26 @@
 package exec
 
 import (
-	"github.com/eclipse/che/agents/go-agents/core/jsonrpc"
+	"github.com/ws-skeleton/che-machine-exec/api/events"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 	"log"
-)
-
-const (
-	OnTerminalExitChanged = "onTerminalExitChanged"
-	OnTerminalError = "onTerminalError"
 )
 
 // Exec health watcher. This watcher cleans up exec resources
 // and sends notification to the subscribed clients in case exec error or exit.
 type HealthWatcher struct {
-	tunnel      *jsonrpc.Tunnel
 	execManager ExecManager
 	exec        *model.MachineExec
 }
 
 // Create new exec health watcher
-func NewHealthWatcher(exec *model.MachineExec, tunnel *jsonrpc.Tunnel, execManager ExecManager) *HealthWatcher {
+func NewHealthWatcher(exec *model.MachineExec) *HealthWatcher {
 	return &HealthWatcher{
 		exec:        exec,
-		tunnel:      tunnel,
-		execManager: execManager}
+		execManager: GetExecManager()}
 }
 
-// Look at the exec health and clean up application on terminal exit/error,
+// Look at the exec health and clean up application on exec exit/error,
 // sent exit/error event to the subscribed clients
 func (watcher *HealthWatcher) CleanUpOnExitOrError() {
 	go func() {
@@ -46,18 +39,13 @@ func (watcher *HealthWatcher) CleanUpOnExitOrError() {
 }
 
 func (watcher *HealthWatcher) notifyClientsAboutExit() {
-	terminalExitEvent := &model.TerminalExitEvent{TerminalId: watcher.exec.ID}
+	execExitEvent := &model.ExecExitEvent{ExecId: watcher.exec.ID}
 
-	if err := watcher.tunnel.Notify(OnTerminalExitChanged, terminalExitEvent); err != nil {
-		log.Println("Unable to send close terminal message")
-	}
+	events.ExecEventBus.Pub(execExitEvent)
 }
 
 func (watcher *HealthWatcher) notifyClientsAboutError(err error) {
-	terminalError := &model.TerminalError{Stack: err.Error()}
-	terminalErrorEvent := &model.TerminalErrorEvent{TerminalId: watcher.exec.ID, TerminalError: terminalError}
+	execErrorEvent := &model.ExecErrorEvent{ExecId: watcher.exec.ID, Stack: err.Error()}
 
-	if err := watcher.tunnel.Notify(OnTerminalError, terminalErrorEvent); err != nil {
-		log.Println("Unable to send error terminal message")
-	}
+	events.ExecEventBus.Pub(execErrorEvent)
 }

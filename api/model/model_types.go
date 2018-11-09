@@ -18,7 +18,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/eclipse/che/agents/go-agents/core/event"
 	"github.com/gorilla/websocket"
-	"github.com/ws-skeleton/che-machine-exec/api/jsonrpc"
+	"github.com/ws-skeleton/che-machine-exec/api/events"
 	"github.com/ws-skeleton/che-machine-exec/line-buffer"
 	"io"
 	"k8s.io/client-go/tools/remotecommand"
@@ -68,29 +68,25 @@ type MachineExec struct {
 	Buffer *line_buffer.LineRingBuffer
 }
 
-type TerminalExitEvent struct {
+type ExecExitEvent struct {
 	event.E
 
-	TerminalId int `json:"terminalId"`
+	ExecId int `json:"id"`
 }
 
-func (*TerminalExitEvent) Type() string {
-	return jsonrpc.OnExecExit
+func (*ExecExitEvent) Type() string {
+	return events.OnExecExit
 }
 
-type TerminalErrorEvent struct {
+type ExecErrorEvent struct {
 	event.E
 
-	TerminalId    int            `json:"terminalId"`
-	TerminalError *TerminalError `json:"error"`
+	ExecId int    `json:"id"`
+	Stack  string `json:"stack"`
 }
 
-func (*TerminalErrorEvent) Type() string {
-	return jsonrpc.OnExecError
-}
-
-type TerminalError struct {
-	Stack string `json:"stack"`
+func (*ExecErrorEvent) Type() string {
+	return events.OnExecError
 }
 
 func (machineExec *MachineExec) AddWebSocket(wsConn *websocket.Conn) {

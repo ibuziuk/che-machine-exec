@@ -17,6 +17,7 @@ import (
 	"github.com/eclipse/che/agents/go-agents/core/jsonrpc"
 	"github.com/eclipse/che/agents/go-agents/core/jsonrpc/jsonrpcws"
 	"github.com/eclipse/che/agents/go-agents/core/rest"
+	"github.com/ws-skeleton/che-machine-exec/api/events"
 	jsonRpcApi "github.com/ws-skeleton/che-machine-exec/api/jsonrpc"
 	"github.com/ws-skeleton/che-machine-exec/api/websocket"
 	"log"
@@ -47,6 +48,10 @@ func main() {
 							return err
 						}
 						tunnel := jsonrpc.NewManagedTunnel(conn)
+
+						execConsumer := &events.ExecEventConsumer{}
+						events.ExecEventBus.SubAny(execConsumer, events.OnExecError, events.OnExecExit)
+
 						tunnel.SayHello()
 						return nil
 					},

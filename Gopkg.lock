@@ -89,9 +89,10 @@
   revision = "449fdfce4d962303d702fec724ef0ad181c92528"
 
 [[projects]]
-  digest = "1:dd6a60f57fca8adc9ea7f76270d58c745a33b8df5424ec70efdde8741e419b4a"
+  digest = "1:4043a76ea86b1055af51134fc2b2b8f6f39bf0b2ce249e1b1a580d02605a8f70"
   name = "github.com/eclipse/che"
   packages = [
+    "agents/go-agents/core/event",
     "agents/go-agents/core/jsonrpc",
     "agents/go-agents/core/jsonrpc/jsonrpcws",
     "agents/go-agents/core/rest",
@@ -463,6 +464,7 @@
     "github.com/docker/docker/api/types",
     "github.com/docker/docker/api/types/filters",
     "github.com/docker/docker/client",
+    "github.com/eclipse/che/agents/go-agents/core/event",
     "github.com/eclipse/che/agents/go-agents/core/jsonrpc",
     "github.com/eclipse/che/agents/go-agents/core/jsonrpc/jsonrpcws",
     "github.com/eclipse/che/agents/go-agents/core/rest",

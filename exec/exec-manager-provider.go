@@ -23,15 +23,27 @@ import (
 
 var execManager ExecManager
 
+// ExecManager to manage exec life cycle.
 type ExecManager interface {
-	// add TerminalHelthWatcher
+	// Create new Exec defined by machine exec model object.
 	Create(machineExec *model.MachineExec) (int, error)
-	Remove(execId int)
+
+	// Remove information about exec by ExecId.
+	// It's can be useful in case exec error or exec exit.
+	Remove(execId int) // todo rename it. f.e.: CleanUp
+
+	// Check if exec with current id is exists
 	Check(id int) (int, error)
+
+	// Attach simple websocket connection to the exec stdIn/stdOut by unique exec id.
 	Attach(id int, conn *websocket.Conn) error
+
+	// Resize exec by unique id.
 	Resize(id int, cols uint, rows uint) error
 }
 
+// Create and return new ExecManager for current infrastructure.
+// Fail with panic if it is impossible.
 func CreateExecManager() ExecManager {
 	var manager ExecManager
 
@@ -43,11 +55,14 @@ func CreateExecManager() ExecManager {
 		manager = docker_infra.New()
 	}
 
-	// todo what we should do in the case, when we have no implementation. Should we return stub, or only log error or throw panic...
+	if manager == nil {
+		log.Fatal("Unable to create execManager for current infrastructure.")
+	}
 
 	return manager
 }
 
+// Get exec manager for current infrastructure
 func GetExecManager() ExecManager {
 	if execManager == nil {
 		execManager = CreateExecManager()

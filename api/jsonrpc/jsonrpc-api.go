@@ -19,12 +19,14 @@ import (
 
 // Constants that represent RPC methods identifiers.
 const (
+	// methods to manage exec life cycle
 	CreateMethod = "create"
 	CheckMethod  = "check"
 	ResizeMethod = "resize"
 )
 
-// RPCRoutes defines process jsonrpc routes.
+// RPCRoutes defines exec jsonrpc routes. All this method available with help json-rpc. They are api
+// to manage exec life cycle.
 var RPCRoutes = jsonrpc.RoutesGroup{
 	Name: "Json-rpc MachineExec Routes",
 	Items: []jsonrpc.Route{
