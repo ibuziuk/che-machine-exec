@@ -43,7 +43,7 @@ func Attach(w http.ResponseWriter, r *http.Request, restParmas rest.Params) erro
 	}
 
 	if err = exec.GetExecManager().Attach(id, wsConn); err != nil {
-		log.Println("Attach to exec"+strconv.Itoa(id)+" failed. Cause:  ", err.Error())
+		log.Println("Attach to exec", strconv.Itoa(id), " failed. Cause:  ", err.Error())
 		return err
 	}
 
