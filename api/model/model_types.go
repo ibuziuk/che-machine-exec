@@ -69,7 +69,7 @@ type MachineExec struct {
 }
 
 type ExecExitEvent struct {
-	event.E
+	event.E `json:"-"`
 
 	ExecId int `json:"id"`
 }
@@ -79,7 +79,7 @@ func (*ExecExitEvent) Type() string {
 }
 
 type ExecErrorEvent struct {
-	event.E
+	event.E `json:"-"`
 
 	ExecId int    `json:"id"`
 	Stack  string `json:"stack"`

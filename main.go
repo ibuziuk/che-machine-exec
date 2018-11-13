@@ -49,7 +49,7 @@ func main() {
 						}
 						tunnel := jsonrpc.NewManagedTunnel(conn)
 
-						execConsumer := &events.ExecEventConsumer{}
+						execConsumer := &events.ExecEventConsumer{Tunnel: tunnel}
 						events.ExecEventBus.SubAny(execConsumer, events.OnExecError, events.OnExecExit)
 
 						tunnel.SayHello()
@@ -84,6 +84,8 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
 	}
+
+	events.PeriodicallyCleanUpBus()
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Println("Unable to start server. Cause: ", err.Error())
