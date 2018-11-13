@@ -25,8 +25,7 @@ const (
 	ResizeMethod = "resize"
 )
 
-// RPCRoutes defines exec jsonrpc routes. All this method available with help json-rpc. They are api
-// to manage exec life cycle.
+// RPCRoutes defines json-rpc exec api. This api uses to manage exec's life cycle.
 var RPCRoutes = jsonrpc.RoutesGroup{
 	Name: "Json-rpc MachineExec Routes",
 	Items: []jsonrpc.Route{
