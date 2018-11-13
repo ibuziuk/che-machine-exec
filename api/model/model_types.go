@@ -176,7 +176,7 @@ func (machineExec *MachineExec) WriteDataToWsConnections(data []byte) {
 	// send data to the all connected clients
 	for _, wsConn := range machineExec.WsConns {
 		if err := wsConn.WriteMessage(websocket.TextMessage, data); err != nil && !IsNormalWSError(err) {
-			log.Println("failed to write to ws-conn message!!!" + err.Error())
+			log.Println("failed to write to ws-conn message. Cause: " + err.Error())
 			machineExec.RemoveWebSocket(wsConn)
 		}
 	}
