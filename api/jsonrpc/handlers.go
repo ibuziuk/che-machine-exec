@@ -40,7 +40,7 @@ var (
 	execManager = exec.GetExecManager()
 )
 
-func jsonRpcCreateExec(tunnel *jsonrpc.Tunnel, params interface{}, t jsonrpc.RespTransmitter) {
+func jsonRpcCreateExec(_ *jsonrpc.Tunnel, params interface{}, t jsonrpc.RespTransmitter) {
 	machineExec := params.(*model.MachineExec)
 
 	id, err := execManager.Create(machineExec)

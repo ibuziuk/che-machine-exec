@@ -44,8 +44,8 @@ var (
 	prevExecID uint64 = 0
 )
 
-func New() DockerMachineExecManager {
-	return DockerMachineExecManager{client: createClient()}
+func New() *DockerMachineExecManager {
+	return &DockerMachineExecManager{client: createClient()}
 }
 
 func createClient() *client.Client {
@@ -58,7 +58,7 @@ func createClient() *client.Client {
 	return dockerClient
 }
 
-func (manager DockerMachineExecManager) Create(machineExec *model.MachineExec) (int, error) {
+func (manager *DockerMachineExecManager) Create(machineExec *model.MachineExec) (int, error) {
 	container, err := findMachineContainer(manager, &machineExec.Identifier)
 	if err != nil {
 		return -1, err
@@ -96,14 +96,14 @@ func (manager DockerMachineExecManager) Create(machineExec *model.MachineExec) (
 	return machineExec.ID, nil
 }
 
-func (manager DockerMachineExecManager) Remove(execId int) {
+func (manager *DockerMachineExecManager) Remove(execId int) {
 	defer machineExecs.mutex.Unlock()
 
 	machineExecs.mutex.Lock()
 	delete(machineExecs.execMap, execId)
 }
 
-func (manager DockerMachineExecManager) Check(id int) (int, error) {
+func (manager *DockerMachineExecManager) Check(id int) (int, error) {
 	machineExec := getById(id)
 	if machineExec == nil {
 		return -1, errors.New("Exec '" + strconv.Itoa(id) + "' was not found")
@@ -111,7 +111,7 @@ func (manager DockerMachineExecManager) Check(id int) (int, error) {
 	return machineExec.ID, nil
 }
 
-func (manager DockerMachineExecManager) Attach(id int, conn *websocket.Conn) error {
+func (manager *DockerMachineExecManager) Attach(id int, conn *websocket.Conn) error {
 	machineExec := getById(id)
 	if machineExec == nil {
 		return errors.New("Exec '" + strconv.Itoa(id) + "' to attach was not found")
@@ -143,7 +143,7 @@ func (manager DockerMachineExecManager) Attach(id int, conn *websocket.Conn) err
 	return nil
 }
 
-func (manager DockerMachineExecManager) Resize(id int, cols uint, rows uint) error {
+func (manager *DockerMachineExecManager) Resize(id int, cols uint, rows uint) error {
 	machineExec := getById(id)
 	if machineExec == nil {
 		return errors.New("Exec to resize '" + strconv.Itoa(id) + "' was not found")
