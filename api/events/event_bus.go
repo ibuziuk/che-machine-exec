@@ -15,15 +15,28 @@ const (
 	CleanUpPeriod = 5
 )
 
+type ExecEventBus interface {
+	// Periodically clean up event bus from closed connections.
+	PeriodicallyCleanUpBus()
+	// Send event `e` to the all registered consumers
+	Pub(e event.E)
+	// Define event consumers and event types
+	SubAny(consumer event.Consumer, types ...string)
+}
+
+type ExecEventBusImpl struct {
+	*event.Bus
+}
+
 // Event bus to send events with information about execs to the clients.
-var ExecEventBus = event.NewBus()
+var EventBus = &ExecEventBusImpl{Bus: event.NewBus()}
 
 // Periodically clean up event bus from closed connections.
-func PeriodicallyCleanUpBus() {
+func (eventBus *ExecEventBusImpl) PeriodicallyCleanUpBus() {
 	go func() {
 		ticker := time.NewTicker(CleanUpPeriod * time.Second)
 		for range ticker.C {
-			ExecEventBus.RmIf(func(c event.Consumer) bool {
+			eventBus.RmIf(func(c event.Consumer) bool {
 				if execConsumer, ok := c.(*ExecEventConsumer); ok {
 					return execConsumer.Tunnel.IsClosed()
 				}

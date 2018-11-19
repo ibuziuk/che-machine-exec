@@ -45,21 +45,18 @@ type ExecManager interface {
 // Create and return new ExecManager for current infrastructure.
 // Fail with panic if it is impossible.
 func CreateExecManager() ExecManager {
-	var manager ExecManager
-
-	if isKubernetesInfra() {
+	switch {
+	case isKubernetesInfra():
 		log.Println("Use kubernetes implementation")
-		manager = kubernetes_infra.New()
-	} else if isDockerInfra() {
+		return kubernetes_infra.New()
+	case isDockerInfra():
 		log.Println("Use docker implementation")
-		manager = docker_infra.New()
+		return docker_infra.New()
+	default:
+		log.Fatal("Unable to create manager for current infrastructure.")
 	}
 
-	if manager == nil {
-		log.Fatal("Unable to create execManager for current infrastructure.")
-	}
-
-	return manager
+	return nil
 }
 
 // Get exec manager for current infrastructure

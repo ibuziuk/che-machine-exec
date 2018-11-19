@@ -13,6 +13,7 @@
 package jsonrpc
 
 import (
+	"github.com/ws-skeleton/che-machine-exec/api/events"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 
 	"github.com/eclipse/che/agents/go-agents/core/jsonrpc"
@@ -45,7 +46,7 @@ func jsonRpcCreateExec(_ *jsonrpc.Tunnel, params interface{}, t jsonrpc.RespTran
 
 	id, err := execManager.Create(machineExec)
 
-	healthWatcher := exec.NewHealthWatcher(machineExec)
+	healthWatcher := exec.NewHealthWatcher(machineExec, events.EventBus, execManager)
 	healthWatcher.CleanUpOnExitOrError()
 
 	if err != nil {
