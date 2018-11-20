@@ -172,6 +172,22 @@
   revision = "361d4c0ffd78338ebe0a9e6320cdbe115d7dc026"
 
 [[projects]]
+  branch = "master"
+  digest = "1:0778dc7fce1b4669a8bfa7ae506ec1f595b6ab0f8989c1c0d22a8ca1144e9972"
+  name = "github.com/howeyc/gopass"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "bf9dde6d0d2c004a008c27aaee91170c786f6db8"
+
+[[projects]]
+  digest = "1:8eb1de8112c9924d59bf1d3e5c26f5eaa2bfc2a5fcbb92dc1c2e4546d695f277"
+  name = "github.com/imdario/mergo"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4"
+  version = "v0.3.6"
+
+[[projects]]
   digest = "1:bb3cc4c1b21ea18cfa4e3e47440fc74d316ab25b0cf42927e8c1274917bd9891"
   name = "github.com/json-iterator/go"
   packages = ["."]
@@ -402,7 +418,7 @@
   revision = "e386b2658ed20923da8cc9250e552f082899a1ee"
 
 [[projects]]
-  digest = "1:90b3cac18a9e42ef8a3f06f704a9c89f59d5d2057a1801122aca27f6b761c5bc"
+  digest = "1:28cced3b475b99d924a5bf739b2bb4fdb18f214c7755d2a2ebc4e02da9409cd4"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -442,7 +458,11 @@
     "plugin/pkg/client/auth/exec",
     "rest",
     "rest/watch",
+    "tools/auth",
+    "tools/clientcmd",
     "tools/clientcmd/api",
+    "tools/clientcmd/api/latest",
+    "tools/clientcmd/api/v1",
     "tools/metrics",
     "tools/reference",
     "tools/remotecommand",
@@ -451,6 +471,7 @@
     "util/cert",
     "util/exec",
     "util/flowcontrol",
+    "util/homedir",
     "util/integer",
   ]
   pruneopts = "UT"
@@ -480,6 +501,7 @@
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/kubernetes/typed/core/v1",
     "k8s.io/client-go/rest",
+    "k8s.io/client-go/tools/clientcmd",
     "k8s.io/client-go/tools/remotecommand",
   ]
   solver-name = "gps-cdcl"

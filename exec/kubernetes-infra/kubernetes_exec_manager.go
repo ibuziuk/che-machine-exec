@@ -80,6 +80,8 @@ func createClient() *kubernetes.Clientset {
 		panic(err.Error())
 	}
 
+	//config.ExecProvider.Env
+
 	return clientset
 }
 
