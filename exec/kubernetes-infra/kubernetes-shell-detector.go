@@ -2,6 +2,7 @@ package kubernetes_infra
 
 import (
 	"github.com/pkg/errors"
+	"github.com/ws-skeleton/che-machine-exec/shell"
 	"github.com/ws-skeleton/che-machine-exec/utils"
 	"k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
@@ -9,6 +10,8 @@ import (
 )
 
 type KubernetesShellDetector struct {
+	shell.ContainerShellDetector
+
 	core   v1.CoreV1Interface
 	config *rest.Config
 

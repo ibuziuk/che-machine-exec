@@ -1,10 +1,12 @@
 package docker_infra
 
 import (
+	"github.com/ws-skeleton/che-machine-exec/shell"
 	"github.com/ws-skeleton/che-machine-exec/utils"
 )
 
 type DockerShellDetector struct {
+	shell.ContainerShellDetector
 	ContainerId string
 }
 
