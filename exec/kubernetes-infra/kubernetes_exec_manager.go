@@ -14,10 +14,11 @@ package kubernetes_infra
 
 import (
 	"errors"
+	"github.com/gorilla/websocket"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 	wsConnHandler "github.com/ws-skeleton/che-machine-exec/exec/ws-conn"
 	"github.com/ws-skeleton/che-machine-exec/line-buffer"
-	"github.com/gorilla/websocket"
+	"github.com/ws-skeleton/che-machine-exec/utils"
 	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -49,12 +50,6 @@ var (
 	prevExecID uint64 = 0
 )
 
-const (
-	Pods = "pods"
-	Exec = "exec"
-	Post = "POST"
-)
-
 /**
  * Create new instance of the kubernetes exec manager
  */
@@ -80,9 +75,19 @@ func createClient() *kubernetes.Clientset {
 		panic(err.Error())
 	}
 
-	//config.ExecProvider.Env
-
 	return clientset
+}
+
+//  /etc/shells, echo $0, take a look /usr/sbin/nologin
+func (manager KubernetesExecManager) setUpExecShellPath(exec *model.MachineExec, containerInfo *KubernetesContainerInfo) {
+	if exec.Tty && len(exec.Cmd) == 0 {
+		shellDetector := NewKubernetesShellDetector(manager.core, config, manager.nameSpace, containerInfo)
+		if shell, err := shellDetector.DetectShell(); err == nil {
+			exec.Cmd = []string{shell}
+		} else {
+			exec.Cmd = []string{utils.DefaultShell}
+		}
+	}
 }
 
 func (manager KubernetesExecManager) Create(machineExec *model.MachineExec) (int, error) {
@@ -91,14 +96,16 @@ func (manager KubernetesExecManager) Create(machineExec *model.MachineExec) (int
 		return -1, err
 	}
 
+	manager.setUpExecShellPath(machineExec, containerInfo)
+
 	req := manager.core.RESTClient().Post().
 		Resource(Pods).
-		Name(containerInfo.podName).
+		Name(containerInfo.PodName).
 		Namespace(manager.nameSpace).
 		SubResource(Exec).
 		// set up params
 		VersionedParams(&v1.PodExecOptions{
-			Container: containerInfo.name,
+			Container: containerInfo.Name,
 			Command:   machineExec.Cmd,
 			Stdout:    true,
 			Stderr:    true,

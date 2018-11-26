@@ -17,6 +17,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
+	clientProvider "github.com/ws-skeleton/che-machine-exec/exec/docker-infra/client-provider"
 	"golang.org/x/net/context"
 )
 
@@ -27,8 +28,8 @@ const (
 )
 
 // Filter container by labels: wsId and machineName.
-func findMachineContainer(execManager DockerMachineExecManager, identifier *model.MachineIdentifier) (*types.Container, error) {
-	containers, err := execManager.client.ContainerList(context.Background(), types.ContainerListOptions{
+func FindMachineContainer(identifier *model.MachineIdentifier) (*types.Container, error) {
+	containers, err := clientProvider.GetDockerClient().ContainerList(context.Background(), types.ContainerListOptions{
 		Filters: createMachineFilter(identifier),
 	})
 	if err != nil {

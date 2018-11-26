@@ -27,8 +27,8 @@ const (
 )
 
 type KubernetesContainerInfo struct {
-	name    string
-	podName string
+	Name    string
+	PodName string
 }
 
 // Find container information by pod label: "wsId" and container environment variables "machineName".
@@ -50,8 +50,8 @@ func findContainerInfo(podGetter corev1.PodsGetter, namespace string, identifier
 		containerName = findContainerName(pod, identifier.MachineName)
 		if containerName != nil {
 			containerInfo := &KubernetesContainerInfo{
-				name:    *containerName,
-				podName: pod.Name}
+				Name:    *containerName,
+				PodName: pod.Name}
 			return containerInfo, nil
 		}
 	}

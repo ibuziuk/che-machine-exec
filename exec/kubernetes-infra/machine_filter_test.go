@@ -2,10 +2,10 @@ package kubernetes_infra
 
 import (
 	"errors"
-	"github.com/ws-skeleton/che-machine-exec/api/model"
-	"github.com/ws-skeleton/che-machine-exec/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/ws-skeleton/che-machine-exec/api/model"
+	"github.com/ws-skeleton/che-machine-exec/mocks"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
@@ -41,8 +41,8 @@ func TestShouldReturnContainerInfoWhenWorkspaceContainsOneContainerInThePod(t *t
 
 	containerInfo, _ := findContainerInfo(podGetter, NameSpace, machineIdentifier)
 
-	assert.Equal(t, containerInfo.name, ContainerName1)
-	assert.Equal(t, containerInfo.podName, PodName1)
+	assert.Equal(t, containerInfo.Name, ContainerName1)
+	assert.Equal(t, containerInfo.PodName, PodName1)
 
 	podGetter.AssertExpectations(t)
 	podInterface.AssertExpectations(t)
@@ -62,8 +62,8 @@ func TestShouldReturnContainerInfoWhenWorkspaceContainsTwoContainerInThePod(t *t
 
 	containerInfo, _ := findContainerInfo(podGetter, NameSpace, machineIdentifier)
 
-	assert.Equal(t, containerInfo.name, ContainerName1)
-	assert.Equal(t, containerInfo.podName, PodName1)
+	assert.Equal(t, containerInfo.Name, ContainerName1)
+	assert.Equal(t, containerInfo.PodName, PodName1)
 
 	podGetter.AssertExpectations(t)
 	podInterface.AssertExpectations(t)
@@ -86,8 +86,8 @@ func TestShouldReturnContainerInfoWhenWorkspaceContainsTwoPods(t *testing.T) {
 
 	containerInfo, _ := findContainerInfo(podGetter, NameSpace, machineIdentifier)
 
-	assert.Equal(t, containerInfo.name, ContainerName1)
-	assert.Equal(t, containerInfo.podName, PodName2)
+	assert.Equal(t, containerInfo.Name, ContainerName1)
+	assert.Equal(t, containerInfo.PodName, PodName2)
 
 	podGetter.AssertExpectations(t)
 	podInterface.AssertExpectations(t)

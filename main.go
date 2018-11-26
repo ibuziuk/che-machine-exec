@@ -14,11 +14,11 @@ package main
 
 import (
 	"flag"
-	jsonRpcApi "github.com/ws-skeleton/che-machine-exec/api/jsonrpc"
-	"github.com/ws-skeleton/che-machine-exec/api/websocket"
 	"github.com/eclipse/che/agents/go-agents/core/jsonrpc"
 	"github.com/eclipse/che/agents/go-agents/core/jsonrpc/jsonrpcws"
 	"github.com/eclipse/che/agents/go-agents/core/rest"
+	jsonRpcApi "github.com/ws-skeleton/che-machine-exec/api/jsonrpc"
+	"github.com/ws-skeleton/che-machine-exec/api/websocket"
 	"net/http"
 	"time"
 )

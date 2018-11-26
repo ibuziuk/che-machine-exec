@@ -17,10 +17,12 @@ import (
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/gorilla/websocket"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
+	clientProvider "github.com/ws-skeleton/che-machine-exec/exec/docker-infra/client-provider"
 	wsConnHandler "github.com/ws-skeleton/che-machine-exec/exec/ws-conn"
 	"github.com/ws-skeleton/che-machine-exec/line-buffer"
-	"github.com/gorilla/websocket"
+	"github.com/ws-skeleton/che-machine-exec/utils"
 	"golang.org/x/net/context"
 	"strconv"
 	"sync"
@@ -45,24 +47,28 @@ var (
 )
 
 func New() DockerMachineExecManager {
-	return DockerMachineExecManager{client: createClient()}
+	return DockerMachineExecManager{client: clientProvider.GetDockerClient()}
 }
 
-func createClient() *client.Client {
-	dockerClient, err := client.NewEnvClient()
-	// set up minimal docker version 1.13.0(api version 1.25).
-	dockerClient.UpdateClientVersion("1.25")
-	if err != nil {
-		panic(err)
+//  /etc/shells, echo $0, take a look /usr/sbin/nologin
+func (manager DockerMachineExecManager) setUpExecShellPath(exec *model.MachineExec, containerId string) {
+	if exec.Tty && len(exec.Cmd) == 0 {
+		shellDetector := NewDockerShellDetector(containerId)
+		if shell, err := shellDetector.DetectShell(); err == nil {
+			exec.Cmd = []string{shell}
+		} else {
+			exec.Cmd = []string{utils.DefaultShell}
+		}
 	}
-	return dockerClient
 }
 
 func (manager DockerMachineExecManager) Create(machineExec *model.MachineExec) (int, error) {
-	container, err := findMachineContainer(manager, &machineExec.Identifier)
+	container, err := FindMachineContainer(&machineExec.Identifier)
 	if err != nil {
 		return -1, err
 	}
+
+	manager.setUpExecShellPath(machineExec, container.ID)
 
 	fmt.Println("found container for creation exec! id=", container.ID)
 

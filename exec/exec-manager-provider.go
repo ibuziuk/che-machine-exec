@@ -13,10 +13,10 @@
 package exec
 
 import (
+	"github.com/gorilla/websocket"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 	"github.com/ws-skeleton/che-machine-exec/exec/docker-infra"
 	"github.com/ws-skeleton/che-machine-exec/exec/kubernetes-infra"
-	"github.com/gorilla/websocket"
 	"log"
 	"os"
 )
