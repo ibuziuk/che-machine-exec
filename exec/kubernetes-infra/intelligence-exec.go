@@ -20,7 +20,8 @@ type KubernetesIntelligenceExec struct {
 
 	// information to find container
 	namespace     string
-	containerInfo *KubernetesContainerInfo
+	containerName string
+	podName string
 
 	// stdOut/stdErr buffers
 	stdOut *bytes.Buffer
@@ -31,11 +32,12 @@ type KubernetesIntelligenceExec struct {
 	config *rest.Config
 }
 
-func NewIntelligenceExec(command []string, containerInfo *KubernetesContainerInfo, namespace string, core v1.CoreV1Interface, config *rest.Config) *KubernetesIntelligenceExec {
+func NewIntelligenceExec(command []string, containerInfo map[string]string, namespace string, core v1.CoreV1Interface, config *rest.Config) *KubernetesIntelligenceExec {
 	var stdOut, stdErr bytes.Buffer
 	return &KubernetesIntelligenceExec{
 		command:       command,
-		containerInfo: containerInfo,
+		containerName: containerInfo[ContainerName],
+		podName:       containerInfo[PodName],
 		namespace:     namespace,
 		stdOut:        &stdOut,
 		stdErr:        &stdErr,
@@ -50,11 +52,11 @@ func (exec *KubernetesIntelligenceExec) Start() (err error) {
 		Post().
 		Namespace(exec.namespace).
 		Resource(Pods).
-		Name(exec.containerInfo.PodName).
+		Name(exec.podName).
 		SubResource(Exec).
 		// set up params
 		VersionedParams(&corev1.PodExecOptions{
-			Container: exec.containerInfo.Name,
+			Container: exec.containerName,
 			Command:   exec.command,
 			Stdout:    true,
 			Stderr:    true,

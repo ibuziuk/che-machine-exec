@@ -5,5 +5,5 @@ package shell
 // Information about preferable shell we get from /etc/passwd file.
 type ContainerShellDetector interface {
 	// detect preferable shell inside container for current user
-	DetectShell() (shell string, err error)
+	DetectShell(containerInfo map[string]string) (shell string, err error)
 }

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"github.com/docker/docker/api/types"
-	clientProvider "github.com/ws-skeleton/che-machine-exec/exec/docker-infra/client-provider"
+	"github.com/docker/docker/client"
 	"io"
 )
 
@@ -22,20 +22,23 @@ type DockerIntelligenceExec struct {
 
 	// buffer to store exec output
 	stdOut *bytes.Buffer
+
+	client *client.Client
 }
 
-func NewDockerIntelligenceExec(command []string, containerId string) *DockerIntelligenceExec {
+func NewDockerIntelligenceExec(command []string, containerId string, client *client.Client) *DockerIntelligenceExec {
 	var stdOut bytes.Buffer
 	return &DockerIntelligenceExec{
 		command:     command,
 		containerId: containerId,
 		stdOut:      &stdOut,
+		client:client,
 	}
 }
 
 // limit this command by time to prevent hangs?
 func (exec *DockerIntelligenceExec) Start() (err error) {
-	resp, err := clientProvider.GetDockerClient().ContainerExecCreate(context.Background(), exec.containerId, types.ExecConfig{
+	resp, err := exec.client.ContainerExecCreate(context.Background(), exec.containerId, types.ExecConfig{
 		Tty:          false,
 		AttachStdin:  false,
 		AttachStdout: true,
@@ -47,7 +50,7 @@ func (exec *DockerIntelligenceExec) Start() (err error) {
 		return err
 	}
 
-	hjr, err := clientProvider.GetDockerClient().ContainerExecAttach(context.Background(), resp.ID, types.ExecConfig{
+	hjr, err := exec.client.ContainerExecAttach(context.Background(), resp.ID, types.ExecConfig{
 		Detach: false,
 		Tty:    false,
 	})

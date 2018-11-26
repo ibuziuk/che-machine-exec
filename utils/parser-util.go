@@ -19,7 +19,7 @@ import (
 // - Login shel
 // So, each line starts with username and ends by login shell path.
 // Read more: https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/com.ibm.aix.security/passwords_etc_passwd_file.htm
-func ParseEtcPassWd(etcPassWdContent string, userId string) (shell string, err error) {
+func ParseShellFromEtcPassWd(etcPassWdContent string, userId string) (shell string, err error) {
 	rgExp, err := regexp.Compile(".*:.*:" + userId + ":.*:.*:.*:(?P<ShellPath>.*)")
 	if err != nil {
 		return "", err

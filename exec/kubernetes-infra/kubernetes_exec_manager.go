@@ -17,10 +17,11 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 	wsConnHandler "github.com/ws-skeleton/che-machine-exec/exec/ws-conn"
+	"github.com/ws-skeleton/che-machine-exec/filter"
 	"github.com/ws-skeleton/che-machine-exec/line-buffer"
+	"github.com/ws-skeleton/che-machine-exec/shell"
 	"github.com/ws-skeleton/che-machine-exec/utils"
 	"k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
@@ -36,13 +37,16 @@ type MachineExecs struct {
 }
 
 type KubernetesExecManager struct {
-	core      corev1.CoreV1Interface
+	shell.ContainerShellDetector
+	filter.ContainerFilter
+
+	api  corev1.CoreV1Interface
+	config *rest.Config
+
 	nameSpace string
 }
 
 var (
-	config *rest.Config
-
 	machineExecs = MachineExecs{
 		mutex:   &sync.Mutex{},
 		execMap: make(map[int]*model.MachineExec),
@@ -53,37 +57,27 @@ var (
 /**
  * Create new instance of the kubernetes exec manager
  */
-func New() KubernetesExecManager {
+func New(
+	namespace string,
+	api corev1.CoreV1Interface,
+	config *rest.Config,
+	filter filter.ContainerFilter,
+	shellDetector shell.ContainerShellDetector,
+) KubernetesExecManager {
 	return KubernetesExecManager{
-		core:      createClient().CoreV1(),
-		nameSpace: GetNameSpace(),
+		api:       api,
+		nameSpace: namespace,
+		ContainerFilter:filter,
+		ContainerShellDetector: shellDetector,
+		config:config,
 	}
-}
-
-func createClient() *kubernetes.Clientset {
-	var err error
-
-	// creates the in-cluster config
-	config, err = rest.InClusterConfig()
-	if err != nil {
-		panic(err.Error())
-	}
-
-	// creates the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	return clientset
 }
 
 //  /etc/shells, echo $0, take a look /usr/sbin/nologin
-func (manager KubernetesExecManager) setUpExecShellPath(exec *model.MachineExec, containerInfo *KubernetesContainerInfo) {
+func (manager KubernetesExecManager) setUpExecShellPath(exec *model.MachineExec, containerInfo map[string]string) {
 	if exec.Tty && len(exec.Cmd) == 0 {
-		shellDetector := NewKubernetesShellDetector(manager.core, config, manager.nameSpace, containerInfo)
-		if shell, err := shellDetector.DetectShell(); err == nil {
-			exec.Cmd = []string{shell}
+		if containerShell, err := manager.DetectShell(containerInfo); err == nil {
+			exec.Cmd = []string{containerShell}
 		} else {
 			exec.Cmd = []string{utils.DefaultShell}
 		}
@@ -91,21 +85,21 @@ func (manager KubernetesExecManager) setUpExecShellPath(exec *model.MachineExec,
 }
 
 func (manager KubernetesExecManager) Create(machineExec *model.MachineExec) (int, error) {
-	containerInfo, err := findContainerInfo(manager.core, manager.nameSpace, &machineExec.Identifier)
+	containerInfo, err := manager.FindContainerInfo(&machineExec.Identifier)
 	if err != nil {
 		return -1, err
 	}
 
 	manager.setUpExecShellPath(machineExec, containerInfo)
 
-	req := manager.core.RESTClient().Post().
+	req := manager.api.RESTClient().Post().
 		Resource(Pods).
-		Name(containerInfo.PodName).
+		Name(containerInfo[PodName]).
 		Namespace(manager.nameSpace).
 		SubResource(Exec).
 		// set up params
 		VersionedParams(&v1.PodExecOptions{
-			Container: containerInfo.Name,
+			Container: containerInfo[ContainerName],
 			Command:   machineExec.Cmd,
 			Stdout:    true,
 			Stderr:    true,
@@ -113,7 +107,7 @@ func (manager KubernetesExecManager) Create(machineExec *model.MachineExec) (int
 			TTY:       machineExec.Tty,
 		}, scheme.ParameterCodec)
 
-	executor, err := remotecommand.NewSPDYExecutor(config, Post, req.URL())
+	executor, err := remotecommand.NewSPDYExecutor(manager.config, Post, req.URL())
 	if err != nil {
 		return -1, err
 	}

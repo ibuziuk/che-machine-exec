@@ -16,7 +16,14 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 	"github.com/ws-skeleton/che-machine-exec/exec/docker-infra"
+	dockerContainerFilter "github.com/ws-skeleton/che-machine-exec/exec/docker-infra/filter"
+	dockerShellDetector "github.com/ws-skeleton/che-machine-exec/exec/docker-infra/shell"
+	dockerClientProvider "github.com/ws-skeleton/che-machine-exec/exec/docker-infra/client-provider"
 	"github.com/ws-skeleton/che-machine-exec/exec/kubernetes-infra"
+	kubernetesContainerFilter "github.com/ws-skeleton/che-machine-exec/exec/kubernetes-infra/filter"
+	kubernetesShellDetector "github.com/ws-skeleton/che-machine-exec/exec/kubernetes-infra/shell"
+	kubernetesClientProvider "github.com/ws-skeleton/che-machine-exec/exec/kubernetes-infra/client-provider"
+	"github.com/ws-skeleton/che-machine-exec/exec/kubernetes-infra/namespace"
 	"log"
 	"os"
 )
@@ -35,10 +42,25 @@ func CreateExecManager() ExecManager {
 
 	if isKubernetesInfra() {
 		log.Println("Use kubernetes implementation")
-		manager = kubernetes_infra.New()
+
+		nameSpace := namespace.NewNameSpaceProvider().GetNameSpace()
+		clientProvider := kubernetesClientProvider.New()
+		client := clientProvider.GetKubernetesClient()
+		config := clientProvider.GetKubernetesConfig()
+
+		shellDetector := kubernetesShellDetector.New(client.CoreV1(), config, nameSpace)
+		containerFilter := kubernetesContainerFilter.New(nameSpace, client.CoreV1())
+
+		manager = kubernetes_infra.New(nameSpace, client.CoreV1(), config, containerFilter, shellDetector)
 	} else if isDockerInfra() {
 		log.Println("Use docker implementation")
-		manager = docker_infra.New()
+
+		dockerClient := dockerClientProvider.New().GetDockerClient()
+
+		containerFilter := dockerContainerFilter.New(dockerClient)
+		shellDetector := dockerShellDetector.New(dockerClient)
+
+		manager = docker_infra.New(dockerClient, containerFilter, shellDetector)
 	}
 
 	// todo what we should do in the case, when we have no implementation. Should we return stub, or only log error or throw panic...

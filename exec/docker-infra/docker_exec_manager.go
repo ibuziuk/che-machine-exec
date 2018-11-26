@@ -19,9 +19,10 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/gorilla/websocket"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
-	clientProvider "github.com/ws-skeleton/che-machine-exec/exec/docker-infra/client-provider"
 	wsConnHandler "github.com/ws-skeleton/che-machine-exec/exec/ws-conn"
+	"github.com/ws-skeleton/che-machine-exec/filter"
 	"github.com/ws-skeleton/che-machine-exec/line-buffer"
+	"github.com/ws-skeleton/che-machine-exec/shell"
 	"github.com/ws-skeleton/che-machine-exec/utils"
 	"golang.org/x/net/context"
 	"strconv"
@@ -31,6 +32,9 @@ import (
 
 type DockerMachineExecManager struct {
 	client *client.Client
+
+	filter.ContainerFilter
+	shell.ContainerShellDetector
 }
 
 type MachineExecs struct {
@@ -46,16 +50,19 @@ var (
 	prevExecID uint64 = 0
 )
 
-func New() DockerMachineExecManager {
-	return DockerMachineExecManager{client: clientProvider.GetDockerClient()}
+func New(dockerClient *client.Client, filter filter.ContainerFilter, shellDetector shell.ContainerShellDetector) DockerMachineExecManager {
+	return DockerMachineExecManager{
+		client: dockerClient,
+		ContainerFilter: filter,
+		ContainerShellDetector:shellDetector,
+	}
 }
 
 //  /etc/shells, echo $0, take a look /usr/sbin/nologin
-func (manager DockerMachineExecManager) setUpExecShellPath(exec *model.MachineExec, containerId string) {
+func (manager DockerMachineExecManager) setUpExecShellPath(exec *model.MachineExec, containerInfo map[string]string) {
 	if exec.Tty && len(exec.Cmd) == 0 {
-		shellDetector := NewDockerShellDetector(containerId)
-		if shell, err := shellDetector.DetectShell(); err == nil {
-			exec.Cmd = []string{shell}
+		if containerShell, err := manager.DetectShell(containerInfo); err == nil {
+			exec.Cmd = []string{containerShell}
 		} else {
 			exec.Cmd = []string{utils.DefaultShell}
 		}
@@ -63,16 +70,14 @@ func (manager DockerMachineExecManager) setUpExecShellPath(exec *model.MachineEx
 }
 
 func (manager DockerMachineExecManager) Create(machineExec *model.MachineExec) (int, error) {
-	container, err := FindMachineContainer(&machineExec.Identifier)
+	containerInfo, err := manager.FindContainerInfo(&machineExec.Identifier)
 	if err != nil {
 		return -1, err
 	}
 
-	manager.setUpExecShellPath(machineExec, container.ID)
+	manager.setUpExecShellPath(machineExec, containerInfo)
 
-	fmt.Println("found container for creation exec! id=", container.ID)
-
-	resp, err := manager.client.ContainerExecCreate(context.Background(), container.ID, types.ExecConfig{
+	resp, err := manager.client.ContainerExecCreate(context.Background(), containerInfo[ContainerId], types.ExecConfig{
 		Tty:          machineExec.Tty,
 		AttachStdin:  true,
 		AttachStdout: true,

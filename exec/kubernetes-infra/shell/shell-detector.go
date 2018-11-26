@@ -1,7 +1,8 @@
-package kubernetes_infra
+package shell
 
 import (
 	"github.com/pkg/errors"
+	"github.com/ws-skeleton/che-machine-exec/exec/kubernetes-infra"
 	"github.com/ws-skeleton/che-machine-exec/shell"
 	"github.com/ws-skeleton/che-machine-exec/utils"
 	"k8s.io/client-go/kubernetes/typed/core/v1"
@@ -12,43 +13,41 @@ import (
 type KubernetesShellDetector struct {
 	shell.ContainerShellDetector
 
-	core   v1.CoreV1Interface
+	api    v1.CoreV1Interface
 	config *rest.Config
 
 	namespace     string
-	containerInfo *KubernetesContainerInfo
 }
 
-func NewKubernetesShellDetector(core v1.CoreV1Interface, config *rest.Config, namespace string, containerInfo *KubernetesContainerInfo) *KubernetesShellDetector {
+func New(api v1.CoreV1Interface, config *rest.Config, namespace string) *KubernetesShellDetector {
 	return &KubernetesShellDetector{
-		core:          core,
-		config:        config,
-		namespace:     namespace,
-		containerInfo: containerInfo,
+		api:       api,
+		config:    config,
+		namespace: namespace,
 	}
 }
 
-func (detector *KubernetesShellDetector) DetectShell() (shell string, err error) {
-	userName, err := detector.getContainerUserId()
+func (detector *KubernetesShellDetector) DetectShell(containerInfo map[string]string) (shell string, err error) {
+	userName, err := detector.getContainerUID(containerInfo)
 	if err != nil {
 		return "", err
 	}
 
-	etcPassWdContent, err := detector.getEtcPasswdContent()
+	etcPassWdContent, err := detector.getEtcPasswdContent(containerInfo)
 	if err != nil {
 		return "", err
 	}
 
-	return utils.ParseEtcPassWd(etcPassWdContent, userName)
+	return utils.ParseShellFromEtcPassWd(etcPassWdContent, userName)
 }
 
 // Get default user name for current linux container
-func (detector *KubernetesShellDetector) getContainerUserId() (userId string, err error) {
-	userIdExec := NewIntelligenceExec(
+func (detector *KubernetesShellDetector) getContainerUID(containerInfo map[string]string) (userId string, err error) {
+	userIdExec := kubernetes_infra.NewIntelligenceExec(
 		[]string{"id", "-u"},
-		detector.containerInfo,
+		containerInfo,
 		detector.namespace,
-		detector.core,
+		detector.api,
 		detector.config)
 
 	if err := userIdExec.Start(); err != nil {
@@ -65,12 +64,12 @@ func (detector *KubernetesShellDetector) getContainerUserId() (userId string, er
 }
 
 // Get /etc/passwd file content. This file stores login shell information.
-func (detector KubernetesShellDetector) getEtcPasswdContent() (etcPasswdContent string, err error) {
-	etcPasswdContentExec := NewIntelligenceExec(
+func (detector KubernetesShellDetector) getEtcPasswdContent(containerInfo map[string]string) (etcPasswdContent string, err error) {
+	etcPasswdContentExec := kubernetes_infra.NewIntelligenceExec(
 		[]string{"cat", "/etc/passwd"},
-		detector.containerInfo,
+		containerInfo,
 		detector.namespace,
-		detector.core,
+		detector.api,
 		detector.config)
 
 	if err := etcPasswdContentExec.Start(); err != nil {

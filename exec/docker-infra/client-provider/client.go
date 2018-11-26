@@ -1,8 +1,16 @@
 package client_provider
 
-import "github.com/docker/docker/client"
+import (
+	"github.com/docker/docker/client"
+)
 
-var dockerClient *client.Client
+type DockerClientProvider struct {
+	dockerClient *client.Client
+}
+
+func New() *DockerClientProvider  {
+	return &DockerClientProvider{dockerClient:createDockerClient()}
+}
 
 func createDockerClient() *client.Client {
 	dockerClient, err := client.NewEnvClient()
@@ -15,9 +23,6 @@ func createDockerClient() *client.Client {
 	return dockerClient
 }
 
-func GetDockerClient() *client.Client {
-	if dockerClient == nil {
-		dockerClient = createDockerClient()
-	}
-	return dockerClient
+func (clientProvider *DockerClientProvider) GetDockerClient() *client.Client {
+	return clientProvider.dockerClient
 }

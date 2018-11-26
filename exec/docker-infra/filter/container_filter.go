@@ -10,14 +10,16 @@
 //   Red Hat, Inc. - initial API and implementation
 //
 
-package docker_infra
+package filter
 
 import (
 	"errors"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
-	clientProvider "github.com/ws-skeleton/che-machine-exec/exec/docker-infra/client-provider"
+	"github.com/ws-skeleton/che-machine-exec/exec/docker-infra"
+	"github.com/ws-skeleton/che-machine-exec/filter"
 	"golang.org/x/net/context"
 )
 
@@ -27,10 +29,20 @@ const (
 	Label       = "label"
 )
 
+type DockerContainerFilter struct {
+	filter.ContainerFilter
+
+	client *client.Client
+}
+
+func New(client *client.Client) *DockerContainerFilter {
+	return &DockerContainerFilter{client:client}
+}
+
 // Filter container by labels: wsId and machineName.
-func FindMachineContainer(identifier *model.MachineIdentifier) (*types.Container, error) {
-	containers, err := clientProvider.GetDockerClient().ContainerList(context.Background(), types.ContainerListOptions{
-		Filters: createMachineFilter(identifier),
+func (filter *DockerContainerFilter) FindContainerInfo(identifier *model.MachineIdentifier) (containerInfo map[string]string, err error) {
+	containers, err := filter.client.ContainerList(context.Background(), types.ContainerListOptions{
+		Filters: createContainerFilter(identifier),
 	})
 	if err != nil {
 		return nil, err
@@ -43,10 +55,12 @@ func FindMachineContainer(identifier *model.MachineIdentifier) (*types.Container
 		return nil, errors.New("machine " + identifier.MachineName + " was not found")
 	}
 
-	return &containers[0], nil
+	containerInfo = make(map[string]string)
+	containerInfo[docker_infra.ContainerId] = containers[0].ID
+ 	return containerInfo, nil
 }
 
-func createMachineFilter(identifier *model.MachineIdentifier) filters.Args {
+func createContainerFilter(identifier *model.MachineIdentifier) filters.Args {
 	filterArgs := filters.NewArgs()
 	filterArgs.Add(Label, WsId+"="+identifier.WsId)
 	filterArgs.Add(Label, MachineName+"="+identifier.MachineName)
