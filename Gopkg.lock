@@ -89,25 +89,16 @@
   revision = "449fdfce4d962303d702fec724ef0ad181c92528"
 
 [[projects]]
-  digest = "1:4043a76ea86b1055af51134fc2b2b8f6f39bf0b2ce249e1b1a580d02605a8f70"
-  name = "github.com/eclipse/che"
+  digest = "1:f5bb63f36061adf9e239e1300343020bfbb6a4d54173cd75206f124406c16b9e"
+  name = "github.com/eclipse/che-go-jsonrpc"
   packages = [
-    "agents/go-agents/core/event",
-    "agents/go-agents/core/jsonrpc",
-    "agents/go-agents/core/jsonrpc/jsonrpcws",
-    "agents/go-agents/core/rest",
+    ".",
+    "event",
+    "jsonrpcws",
   ]
   pruneopts = "UT"
-  revision = "95f1b5b0ee12b822960ace9af40bd6961d78f732"
-  version = "6.4.0"
-
-[[projects]]
-  digest = "1:7b2d9edc266a35bc21982adea3810f67a97733889ff1fb550a71b24af2e084dd"
-  name = "github.com/eclipse/che-lib"
-  packages = ["websocket"]
-  pruneopts = "UT"
-  revision = "d3c875d289c351defb364b8aee7e7932e0de4fa5"
-  version = "6.4.0"
+  revision = "8449a748a2cdfa68f54d2d72e2b02f539f1cd2c5"
+  version = "0.1.0"
 
 [[projects]]
   digest = "1:c45cef8e0074ea2f8176a051df38553ba997a3616f1ec2d35222b1cf9864881e"
@@ -115,6 +106,26 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
+
+[[projects]]
+  branch = "master"
+  digest = "1:36fe9527deed01d2a317617e59304eb2c4ce9f8a24115bcc5c2e37b3aee5bae4"
+  name = "github.com/gin-contrib/sse"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
+
+[[projects]]
+  digest = "1:feb62db6430e74d42d28346dfe2f03b9a26ea2accc94c0413217fde06f4f58fc"
+  name = "github.com/gin-gonic/gin"
+  packages = [
+    ".",
+    "binding",
+    "json",
+    "render",
+  ]
+  pruneopts = "UT"
+  revision = "bd4f73af679e7d645f6d0277258fa360eda96f2d"
 
 [[projects]]
   digest = "1:f83d740263b44fdeef3e1bce6147b5d7283fcad1a693d39639be33993ecf3db1"
@@ -180,11 +191,12 @@
   revision = "f2b4162afba35581b6d4a50d3b8f34e33c144682"
 
 [[projects]]
-  digest = "1:96ffeb0c3df79ef8ec60b22cd18d9a2d12747166caec50578eccf9ffb19ac1c7"
-  name = "github.com/julienschmidt/httprouter"
+  digest = "1:0981502f9816113c9c8c4ac301583841855c8cf4da8c72f696b3ebedf6d0e4e5"
+  name = "github.com/mattn/go-isatty"
   packages = ["."]
   pruneopts = "UT"
-  revision = "4563b0ba73e4db6c6423b60a26f3cadd2e9a1ec9"
+  revision = "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c"
+  version = "v0.0.4"
 
 [[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
@@ -250,6 +262,14 @@
   version = "v1.2.1"
 
 [[projects]]
+  digest = "1:03aa6e485e528acb119fb32901cf99582c380225fc7d5a02758e08b180cb56c3"
+  name = "github.com/ugorji/go"
+  packages = ["codec"]
+  pruneopts = "UT"
+  revision = "b4c50a2b199d93b13dc15e78929cfb23bfdf21ab"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:624a05c7c6ed502bf77364cd3d54631383dafc169982fddd8ee77b53c3d9cccf"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
@@ -304,6 +324,14 @@
   packages = ["rate"]
   pruneopts = "UT"
   revision = "f51c12702a4d776e4c1fa9b0fabab841babae631"
+
+[[projects]]
+  digest = "1:cbc72c4c4886a918d6ab4b95e347ffe259846260f99ebdd8a198c2331cf2b2e9"
+  name = "gopkg.in/go-playground/validator.v8"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "5f1438d3fca68893a817e4a66806cea46a9e4ebf"
+  version = "v8.18.2"
 
 [[projects]]
   digest = "1:ef72505cf098abdd34efeea032103377bec06abb61d8a06f002d5d296a4b1185"
@@ -464,10 +492,10 @@
     "github.com/docker/docker/api/types",
     "github.com/docker/docker/api/types/filters",
     "github.com/docker/docker/client",
-    "github.com/eclipse/che/agents/go-agents/core/event",
-    "github.com/eclipse/che/agents/go-agents/core/jsonrpc",
-    "github.com/eclipse/che/agents/go-agents/core/jsonrpc/jsonrpcws",
-    "github.com/eclipse/che/agents/go-agents/core/rest",
+    "github.com/eclipse/che-go-jsonrpc",
+    "github.com/eclipse/che-go-jsonrpc/event",
+    "github.com/eclipse/che-go-jsonrpc/jsonrpcws",
+    "github.com/gin-gonic/gin",
     "github.com/gorilla/websocket",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/mock",

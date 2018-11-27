@@ -16,7 +16,7 @@ import (
 	"github.com/ws-skeleton/che-machine-exec/api/events"
 	"github.com/ws-skeleton/che-machine-exec/api/model"
 
-	"github.com/eclipse/che/agents/go-agents/core/jsonrpc"
+	"github.com/eclipse/che-go-jsonrpc"
 	"github.com/ws-skeleton/che-machine-exec/exec"
 	"log"
 	"strconv"

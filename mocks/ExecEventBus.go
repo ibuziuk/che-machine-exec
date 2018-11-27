@@ -2,7 +2,7 @@
 
 package mocks
 
-import event "github.com/eclipse/che/agents/go-agents/core/event"
+import event "github.com/eclipse/che-go-jsonrpc/event"
 
 import mock "github.com/stretchr/testify/mock"
 

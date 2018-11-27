@@ -14,7 +14,6 @@ package websocket
 
 import (
 	"errors"
-	"github.com/eclipse/che/agents/go-agents/core/rest"
 	"github.com/gorilla/websocket"
 	"github.com/ws-skeleton/che-machine-exec/exec"
 	"log"
@@ -30,8 +29,8 @@ var (
 	}
 )
 
-func Attach(w http.ResponseWriter, r *http.Request, restParmas rest.Params) error {
-	id, err := strconv.Atoi(restParmas.Get("id"))
+func Attach(w http.ResponseWriter, r *http.Request, idParam string) error {
+	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		return errors.New("failed to parse id")
 	}

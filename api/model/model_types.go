@@ -16,7 +16,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/docker/docker/api/types"
-	"github.com/eclipse/che/agents/go-agents/core/event"
+	"github.com/eclipse/che-go-jsonrpc/event"
 	"github.com/gorilla/websocket"
 	"github.com/ws-skeleton/che-machine-exec/api/events"
 	"github.com/ws-skeleton/che-machine-exec/line-buffer"

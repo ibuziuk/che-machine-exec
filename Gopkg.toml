@@ -33,17 +33,18 @@
   version = "=v17.03.2-ce"
 
 [[constraint]]
-  name = "github.com/eclipse/che"
-  version = "=6.4.0"
+  name = "github.com/eclipse/che-go-jsonrpc"
+  version = "=0.1.0"
+
+[[constraint]]
+  name = "github.com/gin-gonic/gin"
+  revision = "bd4f73af679e7d645f6d0277258fa360eda96f2d"
 
 [[constraint]]
   branch = "master"
   name = "golang.org/x/net"
 
 # Transitive dependencies.
-[[override]]
-  name = "github.com/eclipse/che-lib"
-  version = "=6.4.0"
 
 [[override]]
  name = "github.com/Microsoft/go-winio"
